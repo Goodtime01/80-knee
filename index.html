@@ -324,3 +324,307 @@
 
 
 
+
+
+
+
+
+<script>
+// ==========================================
+// 1. CONFIGURATION: YOUR BACKEND LIVE URL
+// ==========================================
+const API_BASE_URL = 'https://YOUR-REPLIT-URL-HERE.replit.dev';
+
+let authToken = localStorage.getItem('80knee_token') || null;
+let currentUser = null;
+let walletBalance = 0.00;
+let vtuMode = 'airtime';
+
+// Auto-login on page load if token exists
+window.addEventListener('DOMContentLoaded', () => {
+  if (authToken) {
+    fetchUserProfile();
+  }
+});
+
+function updateWalletDisplay() {
+  document.getElementById('wallet-display').innerText = 
+    '₦' + Number(walletBalance).toLocaleString(undefined, {minimumFractionDigits: 2});
+}
+
+// ==========================================
+// 2. AUTHENTICATION (Register & Login)
+// ==========================================
+async function handleLogin() {
+  const username = document.getElementById('auth-username').value.trim();
+  const password = document.getElementById('auth-password').value.trim();
+
+  if (!username || !password) {
+    alert('Please enter both username and password!');
+    return;
+  }
+
+  try {
+    // Attempt Login
+    let res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier: username, password: password })
+    });
+
+    let data = await res.json();
+
+    // If account doesn't exist, automatically register them
+    if (!res.ok) {
+      res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: username,
+          password: password,
+          phone: '080' + Math.floor(10000000 + Math.random() * 90000000) // Temporary phone number
+        })
+      });
+      data = await res.json();
+    }
+
+    if (!res.ok) {
+      alert(data.error || 'Failed to authenticate');
+      return;
+    }
+
+    // Save token permanently
+    authToken = data.token;
+    localStorage.setItem('80knee_token', authToken);
+    
+    // Load User Data
+    await fetchUserProfile();
+
+  } catch (err) {
+    console.error(err);
+    alert('Could not reach 80 knee backend server. Make sure Replit is running!');
+  }
+}
+
+async function fetchUserProfile() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+
+    if (!res.ok) {
+      localStorage.removeItem('80knee_token');
+      return;
+    }
+
+    const data = await res.json();
+    currentUser = data.username;
+    walletBalance = data.wallet_balance || 0.00;
+
+    // Update UI
+    document.getElementById('user-tag').innerText = '@' + currentUser;
+    updateWalletDisplay();
+    document.getElementById('auth-screen').classList.remove('active');
+    document.getElementById('feed-screen').classList.add('active');
+    document.getElementById('main-nav').style.display = 'flex';
+
+    // Load Live Posts
+    loadFeed();
+
+  } catch (err) {
+    console.error('Profile fetch failed:', err);
+  }
+}
+
+// ==========================================
+// 3. NAVIGATION
+// ==========================================
+function switchTab(screenId, element) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  element.classList.add('active');
+  
+  if (screenId === 'feed-screen') loadFeed();
+}
+
+// ==========================================
+// 4. SOCIAL FEED (Real Backend Data)
+// ==========================================
+async function loadFeed() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/posts`, {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    const posts = await res.json();
+
+    const container = document.getElementById('posts-container');
+    container.innerHTML = '';
+
+    if (!Array.isArray(posts) || posts.length === 0) {
+      container.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No posts yet. Be the first to post!</p>';
+      return;
+    }
+
+    posts.forEach(post => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <h4>@${post.username || 'User'}</h4>
+        <p style="font-size: 14px; color: #cbd5e1; margin: 4px 0 8px 0;">${post.content}</p>
+        <span onclick="toggleLike(${post.id})" style="font-size: 13px; color: #f43f5e; cursor: pointer;">
+          ${post.user_has_liked ? '❤️' : '🤍'} ${post.likes_count || 0} Likes
+        </span>
+      `;
+      container.appendChild(card);
+    });
+  } catch (err) {
+    console.error('Error loading posts:', err);
+  }
+}
+
+async function createPost() {
+  const input = document.getElementById('post-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/posts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ content: text })
+    });
+
+    if (res.ok) {
+      input.value = '';
+      loadFeed();
+    } else {
+      alert('Error creating post.');
+    }
+  } catch (err) {
+    console.error('Post creation error:', err);
+  }
+}
+
+async function toggleLike(postId) {
+  try {
+    await fetch(`${API_BASE_URL}/api/posts/${postId}/like`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    loadFeed();
+  } catch (err) {
+    console.error('Like error:', err);
+  }
+}
+
+// ==========================================
+// 5. DIRECT MESSAGING (Real API)
+// ==========================================
+async function sendChatMessage() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const chatBox = document.getElementById('chat-box');
+
+  // Display user's bubble immediately
+  const userBubble = document.createElement('div');
+  userBubble.className = 'bubble me';
+  userBubble.innerText = msg;
+  chatBox.appendChild(userBubble);
+  input.value = '';
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  try {
+    // Send to backend
+    await fetch(`${API_BASE_URL}/api/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ text: msg, receiverId: 1 })
+    });
+  } catch (err) {
+    console.error('Failed to send message:', err);
+  }
+}
+
+// ==========================================
+// 6. VTU AIRTIME & DATA (Real Backend)
+// ==========================================
+let selectedNetwork = 'MTN';
+
+function setVtuMode(mode) {
+  vtuMode = mode;
+  document.getElementById('toggle-airtime').className = mode === 'airtime' ? 'active' : '';
+  document.getElementById('toggle-data').className = mode === 'data' ? 'active' : '';
+  document.getElementById('airtime-section').style.display = mode === 'airtime' ? 'block' : 'none';
+  document.getElementById('data-section').style.display = mode === 'data' ? 'block' : 'none';
+}
+
+function pickNet(btn) {
+  document.querySelectorAll('.net-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedNetwork = btn.innerText;
+}
+
+async function processPurchase() {
+  const phone = document.getElementById('vtu-phone').value.trim();
+  if (!phone || phone.length < 10) {
+    alert('Please enter a valid phone number!');
+    return;
+  }
+
+  let amount = 0;
+  let endpoint = `${API_BASE_URL}/api/vtu/airtime`;
+  let payload = { phone: phone, network: selectedNetwork };
+
+  if (vtuMode === 'airtime') {
+    amount = parseFloat(document.getElementById('airtime-amount').value);
+    if (!amount || amount < 50) { alert('Minimum airtime is ₦50'); return; }
+    payload.amount = amount;
+  } else {
+    endpoint = `${API_BASE_URL}/api/vtu/data`;
+    const plan = document.getElementById('data-plan-select');
+    amount = parseFloat(plan.value);
+    payload.amount = amount;
+    payload.plan = plan.options[plan.selectedIndex].text;
+  }
+
+  if (walletBalance < amount) {
+    alert('Insufficient wallet balance in your 80 knee account!');
+    return;
+  }
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert(`Success! ₦${amount} recharge initiated for ${phone}.`);
+      fetchUserProfile(); // Refresh live wallet balance from backend
+    } else {
+      alert(data.error || 'Transaction failed.');
+    }
+  } catch (err) {
+    console.error('Purchase error:', err);
+    alert('Network error connecting to payment gateway.');
+  }
+}
+
+</script>
+</body>
+</html>
