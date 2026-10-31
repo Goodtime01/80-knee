@@ -6,9 +6,9 @@
   <title>80 knee</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    body { background: #0f172a; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-    .top-bar { background: #1e293b; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
-    .logo { font-size: 19px; font-weight: 800; color: #38bdf8; letter-spacing: 0.5px; }
+    body { background: #0f172a; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding-bottom: 62px; }
+    .top-bar { background: #1e293b; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; flex-shrink: 0; }
+    .logo { font-size: 19px; font-weight: 800; color: #38bdf8; }
     .wallet-badge { background: rgba(16,185,129,0.15); border: 1px solid #10b981; color: #10b981; padding: 5px 10px; border-radius: 16px; font-size: 13px; font-weight: 700; }
     .screen { flex: 1; overflow-y: auto; padding: 16px; display: none; }
     .screen.active { display: flex; flex-direction: column; }
@@ -30,8 +30,9 @@
     .bubble.me { align-self: flex-end; background: #0284c7; border-bottom-right-radius: 2px; }
     .bubble.them { align-self: flex-start; background: #1e293b; border-bottom-left-radius: 2px; }
     .chat-input-bar { display: flex; gap: 8px; }
-    .nav-bar { background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #334155; }
-    .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; font-size: 11px; cursor: pointer; }
+    /* FIXED BOTTOM BAR - Always visible */
+    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0 14px 0; border-top: 1px solid #334155; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; font-size: 11px; cursor: pointer; flex: 1; }
     .nav-item.active { color: #38bdf8; font-weight: 700; }
     .nav-icon { font-size: 19px; margin-bottom: 2px; }
   </style>
@@ -52,7 +53,7 @@
       <input type="text" id="auth-username" class="input-box" placeholder="Enter your username (e.g. Etini)">
       <input type="password" id="auth-password" class="input-box" placeholder="Enter password">
       <button class="btn btn-blue" onclick="handleLogin()">Sign In / Register</button>
-      <p style="font-size:11px; color:#64748b; margin-top:12px;">No Replit needed. Your account is saved on this device. New users get ₦1,000 bonus.</p>
+      <p style="font-size:11px; color:#64748b; margin-top:12px;">New users get ₦500 welcome bonus.</p>
     </div>
   </div>
 
@@ -110,21 +111,16 @@
   </div>
 
 <script>
-// NO REPLIT - All data saved in phone (localStorage)
 let currentUser = localStorage.getItem('80knee_currentUser') || null;
 let walletBalance = 0;
 let vtuMode = 'airtime';
 let selectedNetwork = 'MTN';
-
 function getData(key, def){ try{ return JSON.parse(localStorage.getItem(key)) || def; }catch(e){ return def; } }
 function saveData(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
 function saveUsers(users){ saveData('80knee_users', users); }
 function getUsers(){ return getData('80knee_users', []); }
 function saveWallet(){ if(currentUser){ let u = getUsers(); let me = u.find(x=>x.username===currentUser); if(me){ me.wallet = walletBalance; saveUsers(u); } } }
-
-function updateWalletDisplay(){
-  document.getElementById('wallet-display').innerText = '₦' + Number(walletBalance).toLocaleString(undefined,{minimumFractionDigits:2});
-}
+function updateWalletDisplay(){ document.getElementById('wallet-display').innerText = '₦' + Number(walletBalance).toLocaleString(undefined,{minimumFractionDigits:2}); }
 function showApp(){
   document.getElementById('user-tag').innerText = '@' + currentUser;
   updateWalletDisplay();
@@ -133,7 +129,6 @@ function showApp(){
   document.getElementById('main-nav').style.display = 'flex';
   loadFeed(); loadChat(); renderHistory();
 }
-
 window.addEventListener('DOMContentLoaded', () => {
   if(currentUser){
     let me = getUsers().find(x=>x.username===currentUser);
@@ -141,7 +136,6 @@ window.addEventListener('DOMContentLoaded', () => {
     else { localStorage.removeItem('80knee_currentUser'); currentUser=null; }
   }
 });
-
 function handleLogin(){
   const username = document.getElementById('auth-username').value.trim();
   const password = document.getElementById('auth-password').value.trim();
@@ -149,19 +143,18 @@ function handleLogin(){
   let users = getUsers();
   let found = users.find(u => u.username.toLowerCase() === username.toLowerCase());
   if(found){
-    if(found.password !== password){ alert('Wrong password for this username. Try another username or correct password.'); return; }
+    if(found.password !== password){ alert('Wrong password for this username.'); return; }
     currentUser = found.username; walletBalance = found.wallet || 0;
     alert('Welcome back ' + currentUser + '!');
   } else {
-    currentUser = username; walletBalance = 1000;
-    users.push({ username: username, password: password, wallet: 1000 });
+    currentUser = username; walletBalance = 500;
+    users.push({ username: username, password: password, wallet: 500 });
     saveUsers(users);
-    alert('Account created! You got ₦1,000 welcome bonus.');
+    alert('Account created! You got ₦500 welcome bonus.');
   }
   localStorage.setItem('80knee_currentUser', currentUser);
   showApp();
 }
-
 function switchTab(screenId, element){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -171,19 +164,13 @@ function switchTab(screenId, element){
   if(screenId==='chat-screen') loadChat();
   if(screenId==='vtu-screen') renderHistory();
 }
-
 function loadFeed(){
   let posts = getData('80knee_posts', []);
   const container = document.getElementById('posts-container');
   container.innerHTML = '';
-  // Default welcome post if empty
-  if(posts.length===0){
-    posts = [{ id: 1, username:'Etini (Founder)', content:'Welcome to 80 knee! Top up airtime, buy data bundles, and connect with people 🚀', likes:14, likedBy:[] }];
-    saveData('80knee_posts', posts);
-  }
+  if(posts.length===0){ posts = [{ id: 1, username:'Etini (Founder)', content:'Welcome to 80 knee! Top up airtime, buy data bundles, and connect with people 🚀', likes:14, likedBy:[] }]; saveData('80knee_posts', posts); }
   posts.forEach(post => {
-    const card = document.createElement('div');
-    card.className = 'card';
+    const card = document.createElement('div'); card.className = 'card';
     const isLiked = (post.likedBy||[]).includes(currentUser);
     card.innerHTML = `<h4>@${post.username}</h4><p style="font-size:14px; color:#cbd5e1; margin:4px 0 8px 0;">${post.content}</p><span onclick="toggleLike(${post.id})" style="font-size:13px; color:#f43f5e; cursor:pointer;">${isLiked?'❤️':'🤍'} ${post.likes||0} Likes</span>`;
     container.appendChild(card);
@@ -194,8 +181,7 @@ function createPost(){
   const text = input.value.trim(); if(!text) return;
   let posts = getData('80knee_posts', []);
   posts.unshift({ id: Date.now(), username: currentUser, content: text, likes: 0, likedBy: [] });
-  saveData('80knee_posts', posts);
-  input.value=''; loadFeed();
+  saveData('80knee_posts', posts); input.value=''; loadFeed();
 }
 function toggleLike(postId){
   let posts = getData('80knee_posts', []);
@@ -205,9 +191,6 @@ function toggleLike(postId){
   else { p.likedBy.push(currentUser); p.likes++; }
   saveData('80knee_posts', posts); loadFeed();
 }
-// Old name kept for compatibility
-function likePost(el){ if(el) el.innerText = '❤️ ' + (parseInt(el.innerText.replace(/\D/g,''))||0 + 1) + ' Likes'; }
-
 function loadChat(){
   let msgs = getData('80knee_chats', []);
   if(msgs.length===0){ msgs=[{from:'them', text:'Hello! Welcome to 80 knee. How can we help you today?'}]; saveData('80knee_chats', msgs); }
@@ -223,7 +206,6 @@ function sendChatMessage(){
   input.value=''; loadChat();
   setTimeout(()=>{ let m2=getData('80knee_chats',[]); m2.push({from:'them', text:'Thanks for messaging 80 knee Support! We will reply soon. Your wallet balance is ₦'+Number(walletBalance).toLocaleString()+'.'}); saveData('80knee_chats', m2); loadChat(); }, 800);
 }
-
 function setVtuMode(mode){
   vtuMode = mode;
   document.getElementById('toggle-airtime').className = mode==='airtime'?'active':'';
@@ -231,10 +213,7 @@ function setVtuMode(mode){
   document.getElementById('airtime-section').style.display = mode==='airtime'?'block':'none';
   document.getElementById('data-section').style.display = mode==='data'?'block':'none';
 }
-function pickNet(btn){
-  document.querySelectorAll('.net-btn').forEach(b=>b.classList.remove('selected'));
-  btn.classList.add('selected'); selectedNetwork = btn.innerText;
-}
+function pickNet(btn){ document.querySelectorAll('.net-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); selectedNetwork = btn.innerText; }
 function renderHistory(){
   let h = getData('80knee_vtu', []);
   let div = document.getElementById('vtu-history');
@@ -245,14 +224,9 @@ function processPurchase(){
   const phone = document.getElementById('vtu-phone').value.trim();
   if(!phone || phone.length < 10){ alert('Please enter a valid phone number!'); return; }
   let amount=0, planText='';
-  if(vtuMode==='airtime'){
-    amount = parseFloat(document.getElementById('airtime-amount').value);
-    if(!amount || amount < 50){ alert('Minimum airtime is ₦50'); return; }
-  } else {
-    const plan = document.getElementById('data-plan-select');
-    amount = parseFloat(plan.value); planText = plan.options[plan.selectedIndex].text;
-  }
-  if(walletBalance < amount){ alert('Insufficient wallet balance! Your balance is ₦'+walletBalance.toLocaleString()+'. New users get ₦1,000 bonus.'); return; }
+  if(vtuMode==='airtime'){ amount = parseFloat(document.getElementById('airtime-amount').value); if(!amount || amount < 50){ alert('Minimum airtime is ₦50'); return; } }
+  else { const plan = document.getElementById('data-plan-select'); amount = parseFloat(plan.value); planText = plan.options[plan.selectedIndex].text; }
+  if(walletBalance < amount){ alert('Insufficient wallet balance! Your balance is ₦'+walletBalance.toLocaleString()+'.'); return; }
   walletBalance -= amount; saveWallet(); updateWalletDisplay();
   let h = getData('80knee_vtu', []);
   h.unshift({ type: vtuMode==='airtime'?'Airtime':'Data - '+planText, network: selectedNetwork, phone: phone, amount: amount, time: new Date().toLocaleString() });
