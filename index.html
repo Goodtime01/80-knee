@@ -625,6 +625,76 @@ async function processPurchase() {
   }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+// NEW BACKEND - No Replit, uses phone storage
+function saveData(key, data){
+  localStorage.setItem(key, JSON.stringify(data));
+}
+function getData(key){
+  return JSON.parse(localStorage.getItem(key) || "[]");
+}
+
+// Example: Sign Up
+function signUp(username, password){
+  let users = getData("users");
+  users.push({ username: username, password: password, wallet: 0 });
+  saveData("users", users);
+  alert("Account created! Now you can log in.");
+}
+
+// Example: Login
+function login(username, password){
+  let users = getData("users");
+  let found = users.find(u => u.username === username && u.password === password);
+  if(found){
+    localStorage.setItem("currentUser", username);
+    alert("Welcome " + username);
+  } else {
+    alert("Wrong username or password");
+  }
+}
+
+// Example: Post to Feed
+function postToFeed(text){
+  let posts = getData("posts");
+  let user = localStorage.getItem("currentUser") || "Guest";
+  posts.unshift({ user: user, text: text, time: new Date().toLocaleString() });
+  saveData("posts", posts);
+  showFeed();
+}
+
+function showFeed(){
+  let posts = getData("posts");
+  // show posts on screen
+  console.log(posts);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </script>
 </body>
 </html>
