@@ -5,219 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>80 knee</title>
   <style>
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-    }
-    body { 
-      background: #0f172a; 
-      color: white; 
-      display: flex; 
-      flex-direction: column; 
-      height: 100vh; 
-      overflow: hidden; 
-    }
-    
-    /* Top Bar */
-    .top-bar { 
-      background: #1e293b; 
-      padding: 12px 16px; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      border-bottom: 1px solid #334155; 
-    }
-    .logo { 
-      font-size: 19px; 
-      font-weight: 800; 
-      color: #38bdf8; 
-      letter-spacing: 0.5px; 
-    }
-    .wallet-badge { 
-      background: rgba(16, 185, 129, 0.15); 
-      border: 1px solid #10b981; 
-      color: #10b981; 
-      padding: 5px 10px; 
-      border-radius: 16px; 
-      font-size: 13px; 
-      font-weight: 700; 
-    }
-    
-    /* Screens */
-    .screen { 
-      flex: 1; 
-      overflow-y: auto; 
-      padding: 16px; 
-      display: none; 
-    }
-    .screen.active { 
-      display: flex; 
-      flex-direction: column; 
-    }
-
-    /* Auth Screen */
-    #auth-screen { 
-      justify-content: center; 
-      align-items: center; 
-      text-align: center; 
-    }
-    .auth-card { 
-      background: #1e293b; 
-      padding: 24px; 
-      border-radius: 16px; 
-      width: 100%; 
-      max-width: 340px; 
-      border: 1px solid #334155; 
-    }
-
-    /* Cards & Inputs */
-    .card { 
-      background: #1e293b; 
-      border-radius: 14px; 
-      padding: 14px; 
-      margin-bottom: 12px; 
-      border: 1px solid #334155; 
-    }
-    .card h4 { 
-      color: #38bdf8; 
-      margin-bottom: 4px; 
-      font-size: 15px; 
-    }
-    .input-box { 
-      width: 100%; 
-      padding: 12px; 
-      background: #0f172a; 
-      border: 1px solid #334155; 
-      border-radius: 10px; 
-      color: white; 
-      font-size: 14px; 
-      margin-top: 6px; 
-      margin-bottom: 12px; 
-      outline: none; 
-    }
-    .btn { 
-      width: 100%; 
-      padding: 12px; 
-      background: #10b981; 
-      border: none; 
-      border-radius: 10px; 
-      color: white; 
-      font-size: 15px; 
-      font-weight: 700; 
-      cursor: pointer; 
-    }
-    .btn-blue { 
-      background: #0284c7; 
-    }
-
-    /* VTU & Telecom Tabs */
-    .network-grid { 
-      display: grid; 
-      grid-template-columns: repeat(4, 1fr); 
-      gap: 8px; 
-      margin-bottom: 12px; 
-    }
-    .net-btn { 
-      padding: 9px 2px; 
-      background: #0f172a; 
-      border: 1px solid #334155; 
-      border-radius: 8px; 
-      color: #94a3b8; 
-      font-size: 11px; 
-      font-weight: 700; 
-      text-align: center; 
-      cursor: pointer; 
-    }
-    .net-btn.selected { 
-      border-color: #38bdf8; 
-      color: #38bdf8; 
-      background: rgba(56, 189, 248, 0.1); 
-    }
-    .vtu-toggle { 
-      display: flex; 
-      background: #0f172a; 
-      border-radius: 8px; 
-      padding: 3px; 
-      margin-bottom: 14px; 
-    }
-    .vtu-toggle div { 
-      flex: 1; 
-      text-align: center; 
-      padding: 8px; 
-      font-size: 13px; 
-      font-weight: 600; 
-      cursor: pointer; 
-      border-radius: 6px; 
-      color: #94a3b8; 
-    }
-    .vtu-toggle div.active { 
-      background: #0284c7; 
-      color: white; 
-    }
-
-    /* Chat Messages */
-    .chat-messages { 
-      flex: 1; 
-      overflow-y: auto; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 8px; 
-      margin-bottom: 12px; 
-    }
-    .bubble { 
-      max-width: 80%; 
-      padding: 10px 14px; 
-      border-radius: 14px; 
-      font-size: 14px; 
-      line-height: 1.3; 
-    }
-    .bubble.me { 
-      align-self: flex-end; 
-      background: #0284c7; 
-      border-bottom-right-radius: 2px; 
-    }
-    .bubble.them { 
-      align-self: flex-start; 
-      background: #1e293b; 
-      border-bottom-left-radius: 2px; 
-    }
-    .chat-input-bar { 
-      display: flex; 
-      gap: 8px; 
-    }
-
-    /* Bottom Navigation Bar */
-    .nav-bar { 
-      background: #1e293b; 
-      display: flex; 
-      justify-content: space-around; 
-      padding: 10px 0; 
-      border-top: 1px solid #334155; 
-    }
-    .nav-item { 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      color: #94a3b8; 
-      font-size: 11px; 
-      cursor: pointer; 
-    }
-    .nav-item.active { 
-      color: #38bdf8; 
-      font-weight: 700; 
-    }
-    .nav-icon { 
-      font-size: 19px; 
-      margin-bottom: 2px; 
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background: #0f172a; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .top-bar { background: #1e293b; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+    .logo { font-size: 19px; font-weight: 800; color: #38bdf8; letter-spacing: 0.5px; }
+    .wallet-badge { background: rgba(16,185,129,0.15); border: 1px solid #10b981; color: #10b981; padding: 5px 10px; border-radius: 16px; font-size: 13px; font-weight: 700; }
+    .screen { flex: 1; overflow-y: auto; padding: 16px; display: none; }
+    .screen.active { display: flex; flex-direction: column; }
+    #auth-screen { justify-content: center; align-items: center; text-align: center; }
+    .auth-card { background: #1e293b; padding: 24px; border-radius: 16px; width: 100%; max-width: 340px; border: 1px solid #334155; }
+    .card { background: #1e293b; border-radius: 14px; padding: 14px; margin-bottom: 12px; border: 1px solid #334155; }
+    .card h4 { color: #38bdf8; margin-bottom: 4px; font-size: 15px; }
+    .input-box { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: white; font-size: 14px; margin-top: 6px; margin-bottom: 12px; outline: none; }
+    .btn { width: 100%; padding: 12px; background: #10b981; border: none; border-radius: 10px; color: white; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .btn-blue { background: #0284c7; }
+    .network-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+    .net-btn { padding: 9px 2px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #94a3b8; font-size: 11px; font-weight: 700; text-align: center; cursor: pointer; }
+    .net-btn.selected { border-color: #38bdf8; color: #38bdf8; background: rgba(56,189,248,0.1); }
+    .vtu-toggle { display: flex; background: #0f172a; border-radius: 8px; padding: 3px; margin-bottom: 14px; }
+    .vtu-toggle div { flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; color: #94a3b8; }
+    .vtu-toggle div.active { background: #0284c7; color: white; }
+    .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .bubble { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.3; }
+    .bubble.me { align-self: flex-end; background: #0284c7; border-bottom-right-radius: 2px; }
+    .bubble.them { align-self: flex-start; background: #1e293b; border-bottom-left-radius: 2px; }
+    .chat-input-bar { display: flex; gap: 8px; }
+    .nav-bar { background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #334155; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; font-size: 11px; cursor: pointer; }
+    .nav-item.active { color: #38bdf8; font-weight: 700; }
+    .nav-icon { font-size: 19px; margin-bottom: 2px; }
   </style>
 </head>
 <body>
-
-
-<!-- Top App Bar -->
   <div class="top-bar">
     <div class="logo">80 knee</div>
     <div style="display:flex; align-items:center; gap:8px;">
@@ -226,73 +45,51 @@
     </div>
   </div>
 
-  <!-- Screen 0: Login / Sign Up -->
   <div id="auth-screen" class="screen active">
     <div class="auth-card">
       <h2 style="color:#38bdf8; margin-bottom: 6px;">Welcome to 80 knee</h2>
       <p style="font-size:13px; color:#94a3b8; margin-bottom:16px;">Sign in to access your wallet, feed & chat</p>
-      
       <input type="text" id="auth-username" class="input-box" placeholder="Enter your username (e.g. Etini)">
       <input type="password" id="auth-password" class="input-box" placeholder="Enter password">
-
       <button class="btn btn-blue" onclick="handleLogin()">Sign In / Register</button>
+      <p style="font-size:11px; color:#64748b; margin-top:12px;">No Replit needed. Your account is saved on this device. New users get ₦1,000 bonus.</p>
     </div>
   </div>
 
-  <!-- Screen 1: Feed & Post Creation -->
   <div id="feed-screen" class="screen">
-    <!-- Post Creator -->
     <div class="card">
       <input type="text" id="post-input" class="input-box" placeholder="What's happening? Post on 80 knee...">
       <button class="btn btn-blue" onclick="createPost()">Share Post</button>
     </div>
-
-    <!-- Feed Timeline -->
-    <div id="posts-container">
-      <div class="card">
-        <h4>Etini (Founder)</h4>
-        <p style="font-size: 14px; color: #cbd5e1; margin: 4px 0 8px 0;">Welcome to 80 knee! Top up airtime, buy data bundles, and connect with people 🚀</p>
-        <span onclick="likePost(this)" style="font-size: 13px; color: #f43f5e; cursor: pointer;">❤️ 14 Likes</span>
-      </div>
-    </div>
+    <div id="posts-container"></div>
   </div>
 
-  <!-- Screen 2: Real-time 1-on-1 Chat -->
   <div id="chat-screen" class="screen">
     <div style="font-size:13px; color:#38bdf8; font-weight:700; margin-bottom:8px;">Chatting with: 80 knee Support</div>
-    <div class="chat-messages" id="chat-box">
-      <div class="bubble them">Hello! Welcome to 80 knee. How can we help you today?</div>
-    </div>
+    <div class="chat-messages" id="chat-box"></div>
     <div class="chat-input-bar">
       <input type="text" id="chat-input" class="input-box" style="margin:0;" placeholder="Type a message...">
       <button class="btn btn-blue" style="width: auto; padding: 0 16px;" onclick="sendChatMessage()">Send</button>
     </div>
   </div>
 
-  <!-- Screen 3: VTU Airtime & Data -->
   <div id="vtu-screen" class="screen">
     <div class="vtu-toggle">
       <div id="toggle-airtime" class="active" onclick="setVtuMode('airtime')">Airtime</div>
       <div id="toggle-data" onclick="setVtuMode('data')">Data Bundle</div>
     </div>
-
     <div class="network-grid">
       <div class="net-btn selected" onclick="pickNet(this)">MTN</div>
       <div class="net-btn" onclick="pickNet(this)">AIRTEL</div>
       <div class="net-btn" onclick="pickNet(this)">GLO</div>
       <div class="net-btn" onclick="pickNet(this)">9MOBILE</div>
     </div>
-
     <label style="font-size: 13px; color: #94a3b8;">Phone Number</label>
     <input type="tel" id="vtu-phone" class="input-box" placeholder="e.g. 08012345678">
-
-    <!-- Airtime Section -->
     <div id="airtime-section">
       <label style="font-size: 13px; color: #94a3b8;">Amount (₦)</label>
       <input type="number" id="airtime-amount" class="input-box" placeholder="e.g. 500">
     </div>
-
-    <!-- Data Section -->
     <div id="data-section" style="display:none;">
       <label style="font-size: 13px; color: #94a3b8;">Choose Data Plan</label>
       <select id="data-plan-select" class="input-box" style="background:#0f172a;">
@@ -302,399 +99,167 @@
         <option value="3000">10.0 GB Monthly - ₦3,000</option>
       </select>
     </div>
-
     <button class="btn" onclick="processPurchase()">Confirm & Pay from Wallet</button>
+    <div id="vtu-history" style="margin-top:14px;"></div>
   </div>
 
-  <!-- Bottom Navigation Bar -->
   <div class="nav-bar" id="main-nav" style="display:none;">
-    <div class="nav-item active" onclick="switchTab('feed-screen', this)">
-      <div class="nav-icon">📰</div>
-      <span>Feed</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('chat-screen', this)">
-      <div class="nav-icon">💬</div>
-      <span>Chat</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('vtu-screen', this)">
-      <div class="nav-icon">⚡</div>
-      <span>Airtime/Data</span>
-    </div>
+    <div class="nav-item active" onclick="switchTab('feed-screen', this)"><div class="nav-icon">📰</div><span>Feed</span></div>
+    <div class="nav-item" onclick="switchTab('chat-screen', this)"><div class="nav-icon">💬</div><span>Chat</span></div>
+    <div class="nav-item" onclick="switchTab('vtu-screen', this)"><div class="nav-icon">⚡</div><span>Airtime/Data</span></div>
   </div>
-
-
-
-
-
-
-
 
 <script>
-// ==========================================
-// 1. CONFIGURATION: YOUR BACKEND LIVE URL
-// ==========================================
-const API_BASE_URL = 'https://YOUR-REPLIT-URL-HERE.replit.dev';
-
-let authToken = localStorage.getItem('80knee_token') || null;
-let currentUser = null;
-let walletBalance = 0.00;
+// NO REPLIT - All data saved in phone (localStorage)
+let currentUser = localStorage.getItem('80knee_currentUser') || null;
+let walletBalance = 0;
 let vtuMode = 'airtime';
+let selectedNetwork = 'MTN';
 
-// Auto-login on page load if token exists
+function getData(key, def){ try{ return JSON.parse(localStorage.getItem(key)) || def; }catch(e){ return def; } }
+function saveData(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+function saveUsers(users){ saveData('80knee_users', users); }
+function getUsers(){ return getData('80knee_users', []); }
+function saveWallet(){ if(currentUser){ let u = getUsers(); let me = u.find(x=>x.username===currentUser); if(me){ me.wallet = walletBalance; saveUsers(u); } } }
+
+function updateWalletDisplay(){
+  document.getElementById('wallet-display').innerText = '₦' + Number(walletBalance).toLocaleString(undefined,{minimumFractionDigits:2});
+}
+function showApp(){
+  document.getElementById('user-tag').innerText = '@' + currentUser;
+  updateWalletDisplay();
+  document.getElementById('auth-screen').classList.remove('active');
+  document.getElementById('feed-screen').classList.add('active');
+  document.getElementById('main-nav').style.display = 'flex';
+  loadFeed(); loadChat(); renderHistory();
+}
+
 window.addEventListener('DOMContentLoaded', () => {
-  if (authToken) {
-    fetchUserProfile();
+  if(currentUser){
+    let me = getUsers().find(x=>x.username===currentUser);
+    if(me){ walletBalance = me.wallet || 0; showApp(); }
+    else { localStorage.removeItem('80knee_currentUser'); currentUser=null; }
   }
 });
 
-function updateWalletDisplay() {
-  document.getElementById('wallet-display').innerText = 
-    '₦' + Number(walletBalance).toLocaleString(undefined, {minimumFractionDigits: 2});
-}
-
-// ==========================================
-// 2. AUTHENTICATION (Register & Login)
-// ==========================================
-async function handleLogin() {
+function handleLogin(){
   const username = document.getElementById('auth-username').value.trim();
   const password = document.getElementById('auth-password').value.trim();
-
-  if (!username || !password) {
-    alert('Please enter both username and password!');
-    return;
+  if(!username || !password){ alert('Please enter both username and password!'); return; }
+  let users = getUsers();
+  let found = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  if(found){
+    if(found.password !== password){ alert('Wrong password for this username. Try another username or correct password.'); return; }
+    currentUser = found.username; walletBalance = found.wallet || 0;
+    alert('Welcome back ' + currentUser + '!');
+  } else {
+    currentUser = username; walletBalance = 1000;
+    users.push({ username: username, password: password, wallet: 1000 });
+    saveUsers(users);
+    alert('Account created! You got ₦1,000 welcome bonus.');
   }
-
-  try {
-    // Attempt Login
-    let res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier: username, password: password })
-    });
-
-    let data = await res.json();
-
-    // If account doesn't exist, automatically register them
-    if (!res.ok) {
-      res = await fetch(`${API_BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: username,
-          password: password,
-          phone: '080' + Math.floor(10000000 + Math.random() * 90000000) // Temporary phone number
-        })
-      });
-      data = await res.json();
-    }
-
-    if (!res.ok) {
-      alert(data.error || 'Failed to authenticate');
-      return;
-    }
-
-    // Save token permanently
-    authToken = data.token;
-    localStorage.setItem('80knee_token', authToken);
-    
-    // Load User Data
-    await fetchUserProfile();
-
-  } catch (err) {
-    console.error(err);
-    alert('Could not reach 80 knee backend server. Make sure Replit is running!');
-  }
+  localStorage.setItem('80knee_currentUser', currentUser);
+  showApp();
 }
 
-async function fetchUserProfile() {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
-      headers: { 'Authorization': `Bearer ${authToken}` }
-    });
-
-    if (!res.ok) {
-      localStorage.removeItem('80knee_token');
-      return;
-    }
-
-    const data = await res.json();
-    currentUser = data.username;
-    walletBalance = data.wallet_balance || 0.00;
-
-    // Update UI
-    document.getElementById('user-tag').innerText = '@' + currentUser;
-    updateWalletDisplay();
-    document.getElementById('auth-screen').classList.remove('active');
-    document.getElementById('feed-screen').classList.add('active');
-    document.getElementById('main-nav').style.display = 'flex';
-
-    // Load Live Posts
-    loadFeed();
-
-  } catch (err) {
-    console.error('Profile fetch failed:', err);
-  }
-}
-
-// ==========================================
-// 3. NAVIGATION
-// ==========================================
-function switchTab(screenId, element) {
+function switchTab(screenId, element){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
-  element.classList.add('active');
-  
-  if (screenId === 'feed-screen') loadFeed();
+  if(element) element.classList.add('active');
+  if(screenId==='feed-screen') loadFeed();
+  if(screenId==='chat-screen') loadChat();
+  if(screenId==='vtu-screen') renderHistory();
 }
 
-// ==========================================
-// 4. SOCIAL FEED (Real Backend Data)
-// ==========================================
-async function loadFeed() {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/posts`, {
-      headers: { 'Authorization': `Bearer ${authToken}` }
-    });
-    const posts = await res.json();
-
-    const container = document.getElementById('posts-container');
-    container.innerHTML = '';
-
-    if (!Array.isArray(posts) || posts.length === 0) {
-      container.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No posts yet. Be the first to post!</p>';
-      return;
-    }
-
-    posts.forEach(post => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <h4>@${post.username || 'User'}</h4>
-        <p style="font-size: 14px; color: #cbd5e1; margin: 4px 0 8px 0;">${post.content}</p>
-        <span onclick="toggleLike(${post.id})" style="font-size: 13px; color: #f43f5e; cursor: pointer;">
-          ${post.user_has_liked ? '❤️' : '🤍'} ${post.likes_count || 0} Likes
-        </span>
-      `;
-      container.appendChild(card);
-    });
-  } catch (err) {
-    console.error('Error loading posts:', err);
+function loadFeed(){
+  let posts = getData('80knee_posts', []);
+  const container = document.getElementById('posts-container');
+  container.innerHTML = '';
+  // Default welcome post if empty
+  if(posts.length===0){
+    posts = [{ id: 1, username:'Etini (Founder)', content:'Welcome to 80 knee! Top up airtime, buy data bundles, and connect with people 🚀', likes:14, likedBy:[] }];
+    saveData('80knee_posts', posts);
   }
+  posts.forEach(post => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const isLiked = (post.likedBy||[]).includes(currentUser);
+    card.innerHTML = `<h4>@${post.username}</h4><p style="font-size:14px; color:#cbd5e1; margin:4px 0 8px 0;">${post.content}</p><span onclick="toggleLike(${post.id})" style="font-size:13px; color:#f43f5e; cursor:pointer;">${isLiked?'❤️':'🤍'} ${post.likes||0} Likes</span>`;
+    container.appendChild(card);
+  });
 }
-
-async function createPost() {
+function createPost(){
   const input = document.getElementById('post-input');
-  const text = input.value.trim();
-  if (!text) return;
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/posts`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
-      },
-      body: JSON.stringify({ content: text })
-    });
-
-    if (res.ok) {
-      input.value = '';
-      loadFeed();
-    } else {
-      alert('Error creating post.');
-    }
-  } catch (err) {
-    console.error('Post creation error:', err);
-  }
+  const text = input.value.trim(); if(!text) return;
+  let posts = getData('80knee_posts', []);
+  posts.unshift({ id: Date.now(), username: currentUser, content: text, likes: 0, likedBy: [] });
+  saveData('80knee_posts', posts);
+  input.value=''; loadFeed();
 }
-
-async function toggleLike(postId) {
-  try {
-    await fetch(`${API_BASE_URL}/api/posts/${postId}/like`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${authToken}` }
-    });
-    loadFeed();
-  } catch (err) {
-    console.error('Like error:', err);
-  }
+function toggleLike(postId){
+  let posts = getData('80knee_posts', []);
+  let p = posts.find(x=>x.id==postId); if(!p) return;
+  p.likedBy = p.likedBy||[];
+  if(p.likedBy.includes(currentUser)){ p.likedBy = p.likedBy.filter(u=>u!==currentUser); p.likes--; }
+  else { p.likedBy.push(currentUser); p.likes++; }
+  saveData('80knee_posts', posts); loadFeed();
 }
+// Old name kept for compatibility
+function likePost(el){ if(el) el.innerText = '❤️ ' + (parseInt(el.innerText.replace(/\D/g,''))||0 + 1) + ' Likes'; }
 
-// ==========================================
-// 5. DIRECT MESSAGING (Real API)
-// ==========================================
-async function sendChatMessage() {
+function loadChat(){
+  let msgs = getData('80knee_chats', []);
+  if(msgs.length===0){ msgs=[{from:'them', text:'Hello! Welcome to 80 knee. How can we help you today?'}]; saveData('80knee_chats', msgs); }
+  const box = document.getElementById('chat-box'); box.innerHTML='';
+  msgs.forEach(m=>{ const d=document.createElement('div'); d.className='bubble '+(m.from==='me'?'me':'them'); d.innerText=m.text; box.appendChild(d); });
+  box.scrollTop = box.scrollHeight;
+}
+function sendChatMessage(){
   const input = document.getElementById('chat-input');
-  const msg = input.value.trim();
-  if (!msg) return;
-
-  const chatBox = document.getElementById('chat-box');
-
-  // Display user's bubble immediately
-  const userBubble = document.createElement('div');
-  userBubble.className = 'bubble me';
-  userBubble.innerText = msg;
-  chatBox.appendChild(userBubble);
-  input.value = '';
-  chatBox.scrollTop = chatBox.scrollHeight;
-
-  try {
-    // Send to backend
-    await fetch(`${API_BASE_URL}/api/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
-      },
-      body: JSON.stringify({ text: msg, receiverId: 1 })
-    });
-  } catch (err) {
-    console.error('Failed to send message:', err);
-  }
+  const msg = input.value.trim(); if(!msg) return;
+  let msgs = getData('80knee_chats', []);
+  msgs.push({from:'me', text:msg}); saveData('80knee_chats', msgs);
+  input.value=''; loadChat();
+  setTimeout(()=>{ let m2=getData('80knee_chats',[]); m2.push({from:'them', text:'Thanks for messaging 80 knee Support! We will reply soon. Your wallet balance is ₦'+Number(walletBalance).toLocaleString()+'.'}); saveData('80knee_chats', m2); loadChat(); }, 800);
 }
 
-// ==========================================
-// 6. VTU AIRTIME & DATA (Real Backend)
-// ==========================================
-let selectedNetwork = 'MTN';
-
-function setVtuMode(mode) {
+function setVtuMode(mode){
   vtuMode = mode;
-  document.getElementById('toggle-airtime').className = mode === 'airtime' ? 'active' : '';
-  document.getElementById('toggle-data').className = mode === 'data' ? 'active' : '';
-  document.getElementById('airtime-section').style.display = mode === 'airtime' ? 'block' : 'none';
-  document.getElementById('data-section').style.display = mode === 'data' ? 'block' : 'none';
+  document.getElementById('toggle-airtime').className = mode==='airtime'?'active':'';
+  document.getElementById('toggle-data').className = mode==='data'?'active':'';
+  document.getElementById('airtime-section').style.display = mode==='airtime'?'block':'none';
+  document.getElementById('data-section').style.display = mode==='data'?'block':'none';
 }
-
-function pickNet(btn) {
-  document.querySelectorAll('.net-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  selectedNetwork = btn.innerText;
+function pickNet(btn){
+  document.querySelectorAll('.net-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected'); selectedNetwork = btn.innerText;
 }
-
-async function processPurchase() {
+function renderHistory(){
+  let h = getData('80knee_vtu', []);
+  let div = document.getElementById('vtu-history');
+  if(h.length===0){ div.innerHTML=''; return; }
+  div.innerHTML = '<h4 style="color:#38bdf8; margin-bottom:8px; font-size:14px;">Recent Transactions</h4>' + h.slice(0,5).map(x=>`<div class="card" style="padding:10px;"><p style="font-size:13px;">${x.type} - ${x.network} - ${x.phone} - ₦${x.amount}</p><small style="color:#94a3b8;">${x.time}</small></div>`).join('');
+}
+function processPurchase(){
   const phone = document.getElementById('vtu-phone').value.trim();
-  if (!phone || phone.length < 10) {
-    alert('Please enter a valid phone number!');
-    return;
-  }
-
-  let amount = 0;
-  let endpoint = `${API_BASE_URL}/api/vtu/airtime`;
-  let payload = { phone: phone, network: selectedNetwork };
-
-  if (vtuMode === 'airtime') {
+  if(!phone || phone.length < 10){ alert('Please enter a valid phone number!'); return; }
+  let amount=0, planText='';
+  if(vtuMode==='airtime'){
     amount = parseFloat(document.getElementById('airtime-amount').value);
-    if (!amount || amount < 50) { alert('Minimum airtime is ₦50'); return; }
-    payload.amount = amount;
+    if(!amount || amount < 50){ alert('Minimum airtime is ₦50'); return; }
   } else {
-    endpoint = `${API_BASE_URL}/api/vtu/data`;
     const plan = document.getElementById('data-plan-select');
-    amount = parseFloat(plan.value);
-    payload.amount = amount;
-    payload.plan = plan.options[plan.selectedIndex].text;
+    amount = parseFloat(plan.value); planText = plan.options[plan.selectedIndex].text;
   }
-
-  if (walletBalance < amount) {
-    alert('Insufficient wallet balance in your 80 knee account!');
-    return;
-  }
-
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      alert(`Success! ₦${amount} recharge initiated for ${phone}.`);
-      fetchUserProfile(); // Refresh live wallet balance from backend
-    } else {
-      alert(data.error || 'Transaction failed.');
-    }
-  } catch (err) {
-    console.error('Purchase error:', err);
-    alert('Network error connecting to payment gateway.');
-  }
+  if(walletBalance < amount){ alert('Insufficient wallet balance! Your balance is ₦'+walletBalance.toLocaleString()+'. New users get ₦1,000 bonus.'); return; }
+  walletBalance -= amount; saveWallet(); updateWalletDisplay();
+  let h = getData('80knee_vtu', []);
+  h.unshift({ type: vtuMode==='airtime'?'Airtime':'Data - '+planText, network: selectedNetwork, phone: phone, amount: amount, time: new Date().toLocaleString() });
+  saveData('80knee_vtu', h);
+  alert(`Success! ₦${amount} ${vtuMode} for ${phone} on ${selectedNetwork}. New balance: ₦${walletBalance.toLocaleString()}`);
+  renderHistory();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-// NEW BACKEND - No Replit, uses phone storage
-function saveData(key, data){
-  localStorage.setItem(key, JSON.stringify(data));
-}
-function getData(key){
-  return JSON.parse(localStorage.getItem(key) || "[]");
-}
-
-// Example: Sign Up
-function signUp(username, password){
-  let users = getData("users");
-  users.push({ username: username, password: password, wallet: 0 });
-  saveData("users", users);
-  alert("Account created! Now you can log in.");
-}
-
-// Example: Login
-function login(username, password){
-  let users = getData("users");
-  let found = users.find(u => u.username === username && u.password === password);
-  if(found){
-    localStorage.setItem("currentUser", username);
-    alert("Welcome " + username);
-  } else {
-    alert("Wrong username or password");
-  }
-}
-
-// Example: Post to Feed
-function postToFeed(text){
-  let posts = getData("posts");
-  let user = localStorage.getItem("currentUser") || "Guest";
-  posts.unshift({ user: user, text: text, time: new Date().toLocaleString() });
-  saveData("posts", posts);
-  showFeed();
-}
-
-function showFeed(){
-  let posts = getData("posts");
-  // show posts on screen
-  console.log(posts);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
 </body>
 </html>
