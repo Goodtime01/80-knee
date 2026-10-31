@@ -111,129 +111,139 @@
   </div>
 
 <script>
-let currentUser = localStorage.getItem('80knee_currentUser') || null;
-let walletBalance = 0;
-let vtuMode = 'airtime';
-let selectedNetwork = 'MTN';
-function getData(key, def){ try{ return JSON.parse(localStorage.getItem(key)) || def; }catch(e){ return def; } }
-function saveData(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
-function saveUsers(users){ saveData('80knee_users', users); }
-function getUsers(){ return getData('80knee_users', []); }
-function saveWallet(){ if(currentUser){ let u = getUsers(); let me = u.find(x=>x.username===currentUser); if(me){ me.wallet = walletBalance; saveUsers(u); } } }
-function updateWalletDisplay(){ document.getElementById('wallet-display').innerText = '₦' + Number(walletBalance).toLocaleString(undefined,{minimumFractionDigits:2}); }
-function showApp(){
-  document.getElementById('user-tag').innerText = '@' + currentUser;
-  updateWalletDisplay();
-  document.getElementById('auth-screen').classList.remove('active');
-  document.getElementById('feed-screen').classList.add('active');
-  document.getElementById('main-nav').style.display = 'flex';
-  loadFeed(); loadChat(); renderHistory();
-}
-window.addEventListener('DOMContentLoaded', () => {
-  if(currentUser){
-    let me = getUsers().find(x=>x.username===currentUser);
-    if(me){ walletBalance = me.wallet || 0; showApp(); }
-    else { localStorage.removeItem('80knee_currentUser'); currentUser=null; }
-  }
-});
-function handleLogin(){
-  const username = document.getElementById('auth-username').value.trim();
-  const password = document.getElementById('auth-password').value.trim();
-  if(!username || !password){ alert('Please enter both username and password!'); return; }
-  let users = getUsers();
-  let found = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-  if(found){
-    if(found.password !== password){ alert('Wrong password for this username.'); return; }
-    currentUser = found.username; walletBalance = found.wallet || 0;
-    alert('Welcome back ' + currentUser + '!');
-  } else {
-    currentUser = username; walletBalance = 500;
-    users.push({ username: username, password: password, wallet: 500 });
-    saveUsers(users);
-    alert('Account created! You got ₦500 welcome bonus.');
-  }
-  localStorage.setItem('80knee_currentUser', currentUser);
-  showApp();
-}
-function switchTab(screenId, element){
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
-  if(element) element.classList.add('active');
-  if(screenId==='feed-screen') loadFeed();
-  if(screenId==='chat-screen') loadChat();
-  if(screenId==='vtu-screen') renderHistory();
-}
-function loadFeed(){
-  let posts = getData('80knee_posts', []);
-  const container = document.getElementById('posts-container');
-  container.innerHTML = '';
-  if(posts.length===0){ posts = [{ id: 1, username:'Etini (Founder)', content:'Welcome to 80 knee! Top up airtime, buy data bundles, and connect with people 🚀', likes:14, likedBy:[] }]; saveData('80knee_posts', posts); }
-  posts.forEach(post => {
-    const card = document.createElement('div'); card.className = 'card';
-    const isLiked = (post.likedBy||[]).includes(currentUser);
-    card.innerHTML = `<h4>@${post.username}</h4><p style="font-size:14px; color:#cbd5e1; margin:4px 0 8px 0;">${post.content}</p><span onclick="toggleLike(${post.id})" style="font-size:13px; color:#f43f5e; cursor:pointer;">${isLiked?'❤️':'🤍'} ${post.likes||0} Likes</span>`;
-    container.appendChild(card);
-  });
-}
-function createPost(){
-  const input = document.getElementById('post-input');
-  const text = input.value.trim(); if(!text) return;
-  let posts = getData('80knee_posts', []);
-  posts.unshift({ id: Date.now(), username: currentUser, content: text, likes: 0, likedBy: [] });
-  saveData('80knee_posts', posts); input.value=''; loadFeed();
-}
-function toggleLike(postId){
-  let posts = getData('80knee_posts', []);
-  let p = posts.find(x=>x.id==postId); if(!p) return;
-  p.likedBy = p.likedBy||[];
-  if(p.likedBy.includes(currentUser)){ p.likedBy = p.likedBy.filter(u=>u!==currentUser); p.likes--; }
-  else { p.likedBy.push(currentUser); p.likes++; }
-  saveData('80knee_posts', posts); loadFeed();
-}
-function loadChat(){
-  let msgs = getData('80knee_chats', []);
-  if(msgs.length===0){ msgs=[{from:'them', text:'Hello! Welcome to 80 knee. How can we help you today?'}]; saveData('80knee_chats', msgs); }
-  const box = document.getElementById('chat-box'); box.innerHTML='';
-  msgs.forEach(m=>{ const d=document.createElement('div'); d.className='bubble '+(m.from==='me'?'me':'them'); d.innerText=m.text; box.appendChild(d); });
-  box.scrollTop = box.scrollHeight;
-}
-function sendChatMessage(){
-  const input = document.getElementById('chat-input');
-  const msg = input.value.trim(); if(!msg) return;
-  let msgs = getData('80knee_chats', []);
-  msgs.push({from:'me', text:msg}); saveData('80knee_chats', msgs);
-  input.value=''; loadChat();
-  setTimeout(()=>{ let m2=getData('80knee_chats',[]); m2.push({from:'them', text:'Thanks for messaging 80 knee Support! We will reply soon. Your wallet balance is ₦'+Number(walletBalance).toLocaleString()+'.'}); saveData('80knee_chats', m2); loadChat(); }, 800);
-}
-function setVtuMode(mode){
-  vtuMode = mode;
-  document.getElementById('toggle-airtime').className = mode==='airtime'?'active':'';
-  document.getElementById('toggle-data').className = mode==='data'?'active':'';
-  document.getElementById('airtime-section').style.display = mode==='airtime'?'block':'none';
-  document.getElementById('data-section').style.display = mode==='data'?'block':'none';
-}
-function pickNet(btn){ document.querySelectorAll('.net-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); selectedNetwork = btn.innerText; }
-function renderHistory(){
-  let h = getData('80knee_vtu', []);
-  let div = document.getElementById('vtu-history');
-  if(h.length===0){ div.innerHTML=''; return; }
-  div.innerHTML = '<h4 style="color:#38bdf8; margin-bottom:8px; font-size:14px;">Recent Transactions</h4>' + h.slice(0,5).map(x=>`<div class="card" style="padding:10px;"><p style="font-size:13px;">${x.type} - ${x.network} - ${x.phone} - ₦${x.amount}</p><small style="color:#94a3b8;">${x.time}</small></div>`).join('');
-}
-function processPurchase(){
-  const phone = document.getElementById('vtu-phone').value.trim();
-  if(!phone || phone.length < 10){ alert('Please enter a valid phone number!'); return; }
-  let amount=0, planText='';
-  if(vtuMode==='airtime'){ amount = parseFloat(document.getElementById('airtime-amount').value); if(!amount || amount < 50){ alert('Minimum airtime is ₦50'); return; } }
-  else { const plan = document.getElementById('data-plan-select'); amount = parseFloat(plan.value); planText = plan.options[plan.selectedIndex].text; }
-  if(walletBalance < amount){ alert('Insufficient wallet balance! Your balance is ₦'+walletBalance.toLocaleString()+'.'); return; }
-  walletBalance -= amount; saveWallet(); updateWalletDisplay();
-  let h = getData('80knee_vtu', []);
-  h.unshift({ type: vtuMode==='airtime'?'Airtime':'Data - '+planText, network: selectedNetwork, phone: phone, amount: amount, time: new Date().toLocaleString() });
-  saveData('80knee_vtu', h);
-  alert(`Success! ₦${amount} ${vtuMode} for ${phone} on ${selectedNetwork}. New balance: ₦${walletBalance.toLocaleString()}`);
-  renderHistory();
-}
-</script>
+    let currentUser = null;
+    let walletBalance = 5000.00; // Starter simulated balance for testing
+    let vtuMode = 'airtime';
+
+    function updateWalletDisplay() {
+      document.getElementById('wallet-display').innerText = 
+        '₦' + walletBalance.toLocaleString(undefined, {minimumFractionDigits: 2});
+    }
+
+    // 1. Authentication
+    function handleLogin() {
+      const user = document.getElementById('auth-username').value.trim();
+      if (!user) { 
+        alert('Please enter a username!'); 
+        return; 
+      }
+      
+      currentUser = user;
+      document.getElementById('user-tag').innerText = '@' + currentUser;
+      updateWalletDisplay();
+      
+      document.getElementById('auth-screen').classList.remove('active');
+      document.getElementById('feed-screen').classList.add('active');
+      document.getElementById('main-nav').style.display = 'flex';
+    }
+
+    // 2. Navigation Tabs
+    function switchTab(screenId, element) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+      element.classList.add('active');
+    }
+
+    // 3. Social Feed & Posts
+    function createPost() {
+      const input = document.getElementById('post-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const container = document.getElementById('posts-container');
+      const postCard = document.createElement('div');
+      postCard.className = 'card';
+      postCard.innerHTML = `
+        <h4>${currentUser} (You)</h4>
+        <p style="font-size: 14px; color: #cbd5e1; margin: 4px 0 8px 0;">${text}</p>
+        <span onclick="likePost(this)" style="font-size: 13px; color: #f43f5e; cursor: pointer;">🤍 0 Likes</span>
+      `;
+      container.prepend(postCard);
+      input.value = '';
+    }
+
+    function likePost(el) {
+      let isLiked = el.innerText.includes('❤️');
+      let parts = el.innerText.split(' ');
+      let count = parseInt(parts[1]) || 0;
+      count = isLiked ? count - 1 : count + 1;
+      el.innerText = (isLiked ? '🤍 ' : '❤️ ') + count + ' Likes';
+    }
+
+    // 4. Interactive Chat (With Instant Auto-Reply)
+    function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const chatBox = document.getElementById('chat-box');
+      
+      // User message bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = 'bubble me';
+      userBubble.innerText = msg;
+      chatBox.appendChild(userBubble);
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Simulated instant reply from support
+      setTimeout(() => {
+        const replyBubble = document.createElement('div');
+        replyBubble.className = 'bubble them';
+        replyBubble.innerText = `Thanks for reaching out to 80 knee, ${currentUser}! We received your message: "${msg}"`;
+        chatBox.appendChild(replyBubble);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, 800);
+    }
+
+    // 5. VTU Airtime & Data Purchases
+    function setVtuMode(mode) {
+      vtuMode = mode;
+      document.getElementById('toggle-airtime').className = mode === 'airtime' ? 'active' : '';
+      document.getElementById('toggle-data').className = mode === 'data' ? 'active' : '';
+      document.getElementById('airtime-section').style.display = mode === 'airtime' ? 'block' : 'none';
+      document.getElementById('data-section').style.display = mode === 'data' ? 'block' : 'none';
+    }
+
+    function pickNet(btn) {
+      document.querySelectorAll('.net-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function processPurchase() {
+      const phone = document.getElementById('vtu-phone').value.trim();
+      if (!phone || phone.length < 10) {
+        alert('Please enter a valid phone number!');
+        return;
+      }
+
+      let cost = 0;
+      let label = '';
+
+      if (vtuMode === 'airtime') {
+        cost = parseFloat(document.getElementById('airtime-amount').value);
+        if (!cost || cost < 50) { 
+          alert('Minimum airtime amount is ₦50'); 
+          return; 
+        }
+        label = `₦${cost} Airtime`;
+      } else {
+        const plan = document.getElementById('data-plan-select');
+        cost = parseFloat(plan.value);
+        label = plan.options[plan.selectedIndex].text;
+      }
+
+      if (walletBalance < cost) {
+        alert('Insufficient wallet balance! Please fund your 80 knee wallet.');
+        return;
+      }
+
+      // Deduct balance and update display
+      walletBalance -= cost;
+      updateWalletDisplay();
+      alert(`🎉 Success! ${label} recharge sent to ${phone}. ₦${cost} deducted from your wallet.`);
+    }
+  </script>
 </body>
 </html>
