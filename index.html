@@ -5,139 +5,548 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>80 knee</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    body { background: #0f172a; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding-bottom: 62px; }
-    .top-bar { background: #1e293b; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; flex-shrink: 0; }
-    .logo { font-size: 19px; font-weight: 800; color: #38bdf8; }
-    .wallet-badge { background: rgba(16,185,129,0.15); border: 1px solid #10b981; color: #10b981; padding: 5px 10px; border-radius: 16px; font-size: 13px; font-weight: 700; }
-    .screen { flex: 1; overflow-y: auto; padding: 16px; display: none; }
-    .screen.active { display: flex; flex-direction: column; }
-    #auth-screen { justify-content: center; align-items: center; text-align: center; }
-    .auth-card { background: #1e293b; padding: 24px; border-radius: 16px; width: 100%; max-width: 340px; border: 1px solid #334155; }
-    .card { background: #1e293b; border-radius: 14px; padding: 14px; margin-bottom: 12px; border: 1px solid #334155; }
-    .card h4 { color: #38bdf8; margin-bottom: 4px; font-size: 15px; }
-    .input-box { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: white; font-size: 14px; margin-top: 6px; margin-bottom: 12px; outline: none; }
-    .btn { width: 100%; padding: 12px; background: #10b981; border: none; border-radius: 10px; color: white; font-size: 15px; font-weight: 700; cursor: pointer; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+    }
+    body { 
+      background: #0f172a; 
+      color: white; 
+      display: flex; 
+      flex-direction: column; 
+      height: 100vh; 
+      overflow: hidden; 
+    }
+    
+    /* Top Bar */
+    .top-bar { 
+      background: #1e293b; 
+      padding: 12px 16px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      border-bottom: 1px solid #334155; 
+      z-index: 10;
+    }
+    .logo { 
+      font-size: 20px; 
+      font-weight: 800; 
+      color: #38bdf8; 
+      letter-spacing: 0.5px; 
+    }
+    .user-pill { 
+      background: #0f172a; 
+      border: 1px solid #334155; 
+      color: #38bdf8; 
+      padding: 4px 10px; 
+      border-radius: 20px; 
+      font-size: 12px; 
+      font-weight: 600; 
+    }
+
+    /* Screen Container */
+    .screen { 
+      flex: 1; 
+      overflow-y: auto; 
+      padding: 16px; 
+      display: none; 
+      flex-direction: column;
+    }
+    .screen.active { 
+      display: flex; 
+    }
+
+    /* Auth Screen & Google Button */
+    #auth-screen { 
+      justify-content: center; 
+      align-items: center; 
+      text-align: center; 
+    }
+    .auth-card { 
+      background: #1e293b; 
+      padding: 24px; 
+      border-radius: 18px; 
+      width: 100%; 
+      max-width: 350px; 
+      border: 1px solid #334155; 
+    }
+    .google-btn { 
+      width: 100%; 
+      padding: 12px; 
+      background: white; 
+      color: #1f2937; 
+      font-weight: 700; 
+      font-size: 14px; 
+      border: none; 
+      border-radius: 10px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 10px; 
+      cursor: pointer; 
+      margin-bottom: 14px;
+    }
+    .divider { 
+      margin: 14px 0; 
+      display: flex; 
+      align-items: center; 
+      color: #64748b; 
+      font-size: 12px; 
+    }
+    .divider::before, .divider::after { 
+      content: ""; 
+      flex: 1; 
+      height: 1px; 
+      background: #334155; 
+    }
+    .divider span { 
+      padding: 0 8px; 
+    }
+
+    /* General Inputs & Buttons */
+    .input-box { 
+      width: 100%; 
+      padding: 12px; 
+      background: #0f172a; 
+      border: 1px solid #334155; 
+      border-radius: 10px; 
+      color: white; 
+      font-size: 14px; 
+      margin-top: 6px; 
+      margin-bottom: 12px; 
+      outline: none; 
+    }
+    .btn { 
+      width: 100%; 
+      padding: 12px; 
+      background: #10b981; 
+      border: none; 
+      border-radius: 10px; 
+      color: white; 
+      font-size: 15px; 
+      font-weight: 700; 
+      cursor: pointer; 
+    }
     .btn-blue { background: #0284c7; }
-    .network-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
-    .net-btn { padding: 9px 2px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #94a3b8; font-size: 11px; font-weight: 700; text-align: center; cursor: pointer; }
-    .net-btn.selected { border-color: #38bdf8; color: #38bdf8; background: rgba(56,189,248,0.1); }
-    .vtu-toggle { display: flex; background: #0f172a; border-radius: 8px; padding: 3px; margin-bottom: 14px; }
-    .vtu-toggle div { flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; color: #94a3b8; }
-    .vtu-toggle div.active { background: #0284c7; color: white; }
-    .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-    .bubble { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.3; }
-    .bubble.me { align-self: flex-end; background: #0284c7; border-bottom-right-radius: 2px; }
-    .bubble.them { align-self: flex-start; background: #1e293b; border-bottom-left-radius: 2px; }
-    .chat-input-bar { display: flex; gap: 8px; }
-    /* FIXED BOTTOM BAR - Always visible */
-    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0 14px 0; border-top: 1px solid #334155; }
-    .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; font-size: 11px; cursor: pointer; flex: 1; }
-    .nav-item.active { color: #38bdf8; font-weight: 700; }
-    .nav-icon { font-size: 19px; margin-bottom: 2px; }
+
+    /* Feed Post Cards */
+    .card { 
+      background: #1e293b; 
+      border-radius: 14px; 
+      padding: 14px; 
+      margin-bottom: 14px; 
+      border: 1px solid #334155; 
+    }
+    .post-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 8px; 
+    }
+    .post-actions { 
+      display: flex; 
+      gap: 16px; 
+      padding-top: 10px; 
+      border-top: 1px solid #334155; 
+      font-size: 13px; 
+      color: #94a3b8; 
+    }
+    .post-actions span { 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      gap: 4px; 
+    }
+    .edit-btn { 
+      color: #38bdf8; 
+      font-size: 12px; 
+      cursor: pointer; 
+      padding: 2px 6px; 
+      border-radius: 4px; 
+      background: rgba(56, 189, 248, 0.1); 
+    }
+    .comments-box { 
+      margin-top: 10px; 
+      padding-top: 10px; 
+      border-top: 1px dashed #334155; 
+      display: none; 
+    }
+
+    /* WhatsApp Style Chat */
+    .contact-item { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      padding: 12px; 
+      background: #1e293b; 
+      border-radius: 12px; 
+      margin-bottom: 8px; 
+      cursor: pointer; 
+      border: 1px solid #334155; 
+    }
+    .avatar { 
+      width: 44px; 
+      height: 44px; 
+      border-radius: 50%; 
+      background: #0284c7; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-weight: bold; 
+      font-size: 16px; 
+    }
+    .chat-view { 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      bottom: 0; 
+      background: #0f172a; 
+      z-index: 50; 
+      display: none; 
+      flex-direction: column; 
+    }
+    .chat-header { 
+      background: #1e293b; 
+      padding: 12px 16px; 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      border-bottom: 1px solid #334155; 
+    }
+    .chat-body { 
+      flex: 1; 
+      overflow-y: auto; 
+      padding: 16px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 8px; 
+    }
+    .bubble { 
+      max-width: 80%; 
+      padding: 10px 14px; 
+      border-radius: 14px; 
+      font-size: 14px; 
+    }
+    .bubble.me { 
+      align-self: flex-end; 
+      background: #0284c7; 
+      border-bottom-right-radius: 2px; 
+    }
+    .bubble.them { 
+      align-self: flex-start; 
+      background: #1e293b; 
+      border-bottom-left-radius: 2px; 
+    }
+
+    /* Payment Modal (Bank Account Direct) */
+    .modal-overlay { 
+      position: fixed; 
+      inset: 0; 
+      background: rgba(0, 0, 0, 0.75); 
+      z-index: 100; 
+      display: none; 
+      justify-content: center; 
+      align-items: flex-end; 
+    }
+    .modal-sheet { 
+      background: #1e293b; 
+      width: 100%; 
+      max-width: 500px; 
+      border-radius: 20px 20px 0 0; 
+      padding: 20px; 
+      border-top: 1px solid #334155; 
+    }
+    .bank-card { 
+      background: #0f172a; 
+      padding: 14px; 
+      border-radius: 12px; 
+      margin: 12px 0; 
+      border: 1px solid #38bdf8; 
+    }
+
+    /* Bottom Navigation Bar */
+    .nav-bar { 
+      background: #1e293b; 
+      display: flex; 
+      justify-content: space-around; 
+      padding: 10px 0; 
+      border-top: 1px solid #334155; 
+    }
+    .nav-item { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      color: #94a3b8; 
+      font-size: 11px; 
+      cursor: pointer; 
+    }
+    .nav-item.active { 
+      color: #38bdf8; 
+      font-weight: 700; 
+    }
+    .nav-icon { 
+      font-size: 19px; 
+      margin-bottom: 2px; 
+    }
+
+    /* VTU Networks */
+    .network-grid { 
+      display: grid; 
+      grid-template-columns: repeat(4, 1fr); 
+      gap: 8px; 
+      margin-bottom: 12px; 
+    }
+    .net-btn { 
+      padding: 9px 2px; 
+      background: #0f172a; 
+      border: 1px solid #334155; 
+      border-radius: 8px; 
+      color: #94a3b8; 
+      font-size: 11px; 
+      font-weight: 700; 
+      text-align: center; 
+      cursor: pointer; 
+    }
+    .net-btn.selected { 
+      border-color: #38bdf8; 
+      color: #38bdf8; 
+      background: rgba(56, 189, 248, 0.1); 
+    }
+    .vtu-toggle { 
+      display: flex; 
+      background: #0f172a; 
+      border-radius: 8px; 
+      padding: 3px; 
+      margin-bottom: 14px; 
+    }
+    .vtu-toggle div { 
+      flex: 1; 
+      text-align: center; 
+      padding: 8px; 
+      font-size: 13px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      border-radius: 6px; 
+      color: #94a3b8; 
+    }
+    .vtu-toggle div.active { 
+      background: #0284c7; 
+      color: white; 
+    }
   </style>
 </head>
 <body>
+
+
+<!-- Top Bar (Wallet removed - Direct Bank Integration) -->
   <div class="top-bar">
     <div class="logo">80 knee</div>
-    <div style="display:flex; align-items:center; gap:8px;">
-      <span id="user-tag" style="font-size:12px; color:#94a3b8;">Guest</span>
-      <div class="wallet-badge" id="wallet-display">₦0.00</div>
-    </div>
+    <div class="user-pill" id="user-display">@Guest</div>
   </div>
 
+  <!-- Screen 0: Auth Screen (Google Sign-In & Login Toggle) -->
   <div id="auth-screen" class="screen active">
     <div class="auth-card">
-      <h2 style="color:#38bdf8; margin-bottom: 6px;">Welcome to 80 knee</h2>
-      <p style="font-size:13px; color:#94a3b8; margin-bottom:16px;">Sign in to access your wallet, feed & chat</p>
-      <input type="text" id="auth-username" class="input-box" placeholder="Enter your username (e.g. Etini)">
+      <h2 style="color:#38bdf8; margin-bottom: 6px;" id="auth-title">Join 80 knee</h2>
+      <p style="font-size:13px; color:#94a3b8; margin-bottom:16px;" id="auth-subtitle">Create an account to start posting and chatting</p>
+      
+      <!-- Google Auth Button -->
+      <button class="google-btn" onclick="signInWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        <span id="google-btn-text">Sign up with Google</span>
+      </button>
+
+      <div class="divider"><span>OR WITH USERNAME</span></div>
+
+      <input type="text" id="auth-username" class="input-box" placeholder="Enter username (e.g. Etini)">
       <input type="password" id="auth-password" class="input-box" placeholder="Enter password">
-      <button class="btn btn-blue" onclick="handleLogin()">Sign In / Register</button>
-      <p style="font-size:11px; color:#64748b; margin-top:12px;">New users get ₦500 welcome bonus.</p>
+
+      <button class="btn btn-blue" id="auth-submit-btn" onclick="handleManualAuth()">Sign Up</button>
+
+      <!-- Toggle between Sign Up and Login -->
+      <p style="font-size: 13px; color: #94a3b8; margin-top: 16px;">
+        <span id="auth-toggle-label">Already have an account?</span> 
+        <a href="javascript:void(0)" onclick="toggleAuthMode()" id="auth-toggle-btn" style="color: #38bdf8; font-weight: bold; text-decoration: none;">Log In</a>
+      </p>
     </div>
   </div>
 
+  <!-- Screen 1: Feed (Post, Edit, Like, Comment, Share) -->
   <div id="feed-screen" class="screen">
+    <!-- Post Creator -->
     <div class="card">
-      <input type="text" id="post-input" class="input-box" placeholder="What's happening? Post on 80 knee...">
+      <textarea id="post-input" class="input-box" rows="2" style="resize:none;" placeholder="What's on your mind? Share a post..."></textarea>
       <button class="btn btn-blue" onclick="createPost()">Share Post</button>
     </div>
+
+    <!-- Posts Container -->
     <div id="posts-container"></div>
   </div>
 
+  <!-- Screen 2: WhatsApp Style Chat Contacts -->
   <div id="chat-screen" class="screen">
-    <div style="font-size:13px; color:#38bdf8; font-weight:700; margin-bottom:8px;">Chatting with: 80 knee Support</div>
-    <div class="chat-messages" id="chat-box"></div>
-    <div class="chat-input-bar">
-      <input type="text" id="chat-input" class="input-box" style="margin:0;" placeholder="Type a message...">
-      <button class="btn btn-blue" style="width: auto; padding: 0 16px;" onclick="sendChatMessage()">Send</button>
+    <h3 style="font-size: 16px; margin-bottom: 12px; color: #94a3b8;">Contacts</h3>
+    <div id="contacts-list"></div>
+  </div>
+
+  <!-- 1-on-1 Chat Fullscreen Room (WhatsApp Style) -->
+  <div id="chat-view" class="chat-view">
+    <div class="chat-header">
+      <span onclick="closeChat()" style="font-size: 20px; cursor: pointer; padding-right: 6px;">←</span>
+      <div class="avatar" id="active-chat-avatar" style="width:36px; height:36px; font-size:14px;">?</div>
+      <div>
+        <div style="font-weight: bold; font-size: 15px;" id="active-chat-name">Contact</div>
+        <div style="font-size: 11px; color: #10b981;">Online</div>
+      </div>
+    </div>
+    <div class="chat-body" id="chat-body"></div>
+    <div style="padding: 10px; background: #1e293b; display: flex; gap: 8px;">
+      <input type="text" id="chat-input" class="input-box" style="margin:0;" placeholder="Message...">
+      <button class="btn btn-blue" style="width:auto; padding: 0 16px;" onclick="sendChatMessage()">Send</button>
     </div>
   </div>
 
+  <!-- Screen 3: VTU (Direct Bank Payment) -->
   <div id="vtu-screen" class="screen">
     <div class="vtu-toggle">
       <div id="toggle-airtime" class="active" onclick="setVtuMode('airtime')">Airtime</div>
       <div id="toggle-data" onclick="setVtuMode('data')">Data Bundle</div>
     </div>
+
     <div class="network-grid">
       <div class="net-btn selected" onclick="pickNet(this)">MTN</div>
       <div class="net-btn" onclick="pickNet(this)">AIRTEL</div>
       <div class="net-btn" onclick="pickNet(this)">GLO</div>
       <div class="net-btn" onclick="pickNet(this)">9MOBILE</div>
     </div>
-    <label style="font-size: 13px; color: #94a3b8;">Phone Number</label>
+
+    <label style="font-size: 13px; color: #94a3b8;">Recipient Phone Number</label>
     <input type="tel" id="vtu-phone" class="input-box" placeholder="e.g. 08012345678">
+
+    <!-- Airtime -->
     <div id="airtime-section">
       <label style="font-size: 13px; color: #94a3b8;">Amount (₦)</label>
       <input type="number" id="airtime-amount" class="input-box" placeholder="e.g. 500">
     </div>
+
+    <!-- Data -->
     <div id="data-section" style="display:none;">
-      <label style="font-size: 13px; color: #94a3b8;">Choose Data Plan</label>
+      <label style="font-size: 13px; color: #94a3b8;">Select Data Bundle</label>
       <select id="data-plan-select" class="input-box" style="background:#0f172a;">
         <option value="350">1.0 GB Daily - ₦350</option>
         <option value="600">2.5 GB (2 Days) - ₦600</option>
         <option value="1500">5.0 GB Monthly - ₦1,500</option>
         <option value="3000">10.0 GB Monthly - ₦3,000</option>
+        <option value="5500">20.0 GB Monthly - ₦5,500</option>
       </select>
     </div>
-    <button class="btn" onclick="processPurchase()">Confirm & Pay from Wallet</button>
-    <div id="vtu-history" style="margin-top:14px;"></div>
+
+    <button class="btn" onclick="openBankCheckout()">Pay From Bank Account</button>
   </div>
 
-  <div class="nav-bar" id="main-nav" style="display:none;">
-    <div class="nav-item active" onclick="switchTab('feed-screen', this)"><div class="nav-icon">📰</div><span>Feed</span></div>
-    <div class="nav-item" onclick="switchTab('chat-screen', this)"><div class="nav-icon">💬</div><span>Chat</span></div>
-    <div class="nav-item" onclick="switchTab('vtu-screen', this)"><div class="nav-icon">⚡</div><span>Airtime/Data</span></div>
+  <!-- Bank Account Direct Checkout Modal -->
+  <div class="modal-overlay" id="bank-modal">
+    <div class="modal-sheet">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-size: 17px; color: #38bdf8;">Pay From Bank Account</h3>
+        <span onclick="closeBankCheckout()" style="cursor:pointer; font-size:18px;">✕</span>
+      </div>
+      <p style="font-size:13px; color:#94a3b8;">Total to Pay: <b id="modal-amount" style="color:white; font-size:15px;">₦0</b></p>
+      
+      <div class="bank-card">
+        <label style="font-size: 12px; color: #94a3b8;">Select Your Bank</label>
+        <select id="bank-select" class="input-box" style="margin-bottom:8px;">
+          <option>OPay Digital Services</option>
+          <option>Kuda Microfinance Bank</option>
+          <option>GTBank (Guaranty Trust)</option>
+          <option>Zenith Bank</option>
+          <option>Access Bank</option>
+          <option>Moniepoint MFB</option>
+          <option>Debit / Credit Card</option>
+        </select>
+        <p style="font-size:12px; color:#10b981;">Direct bank transfer / instant debit enabled</p>
+      </div>
+
+      <button class="btn" onclick="completeBankPayment()">Authorize & Complete Payment</button>
+    </div>
   </div>
+
+  <!-- Bottom Navigation Bar -->
+  <div class="nav-bar" id="main-nav" style="display:none;">
+    <div class="nav-item active" onclick="switchTab('feed-screen', this)">
+      <div class="nav-icon">📰</div>
+      <span>Feed</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('chat-screen', this)">
+      <div class="nav-icon">💬</div>
+      <span>Chat</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('vtu-screen', this)">
+      <div class="nav-icon">⚡</div>
+      <span>Airtime/Data</span>
+    </div>
+  </div>
+
 
 <script>
     let currentUser = null;
-    let walletBalance = 5000.00; // Starter simulated balance for testing
+    let isLoginMode = false;
     let vtuMode = 'airtime';
+    let selectedNet = 'MTN';
+    let pendingPurchase = { amount: 0, label: '', phone: '' };
 
-    function updateWalletDisplay() {
-      document.getElementById('wallet-display').innerText = 
-        '₦' + walletBalance.toLocaleString(undefined, {minimumFractionDigits: 2});
+    // ==========================================
+    // 1. GOOGLE SIGN-IN & AUTHENTICATION TOGGLE
+    // ==========================================
+    function toggleAuthMode() {
+      isLoginMode = !isLoginMode;
+      document.getElementById('auth-title').innerText = isLoginMode ? 'Welcome Back' : 'Join 80 knee';
+      document.getElementById('auth-subtitle').innerText = isLoginMode ? 'Log in to your account' : 'Create an account to start posting and chatting';
+      document.getElementById('google-btn-text').innerText = isLoginMode ? 'Log in with Google' : 'Sign up with Google';
+      document.getElementById('auth-submit-btn').innerText = isLoginMode ? 'Log In' : 'Sign Up';
+      document.getElementById('auth-toggle-label').innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
+      document.getElementById('auth-toggle-btn').innerText = isLoginMode ? 'Sign Up' : 'Log In';
     }
 
-    // 1. Authentication
-    function handleLogin() {
+    function signInWithGoogle() {
+      // Simulate Google Sign-In prompt
+      let defaultName = 'Etini Obop';
+      let user = prompt('Google Account Picker: Confirm your name to continue with Google', defaultName);
+      if (!user) user = defaultName;
+      enterApp(user);
+    }
+
+    function handleManualAuth() {
       const user = document.getElementById('auth-username').value.trim();
-      if (!user) { 
-        alert('Please enter a username!'); 
-        return; 
+      const pass = document.getElementById('auth-password').value.trim();
+      if (!user || !pass) {
+        alert('Please enter both username and password!');
+        return;
       }
-      
-      currentUser = user;
-      document.getElementById('user-tag').innerText = '@' + currentUser;
-      updateWalletDisplay();
-      
+      enterApp(user);
+    }
+
+    function enterApp(username) {
+      currentUser = username;
+      document.getElementById('user-display').innerText = '@' + currentUser;
       document.getElementById('auth-screen').classList.remove('active');
       document.getElementById('feed-screen').classList.add('active');
       document.getElementById('main-nav').style.display = 'flex';
+      renderPosts();
+      renderContacts();
     }
 
-    // 2. Navigation Tabs
+    // ==========================================
+    // 2. NAVIGATION
+    // ==========================================
     function switchTab(screenId, element) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -145,59 +554,205 @@
       element.classList.add('active');
     }
 
-    // 3. Social Feed & Posts
-    function createPost() {
-      const input = document.getElementById('post-input');
-      const text = input.value.trim();
-      if (!text) return;
+    // ==========================================
+    // 3. SOCIAL FEED (Edit, Like, Comments, Share)
+    // ==========================================
+    let posts = [
+      {
+        id: 1,
+        author: '80 knee Team',
+        content: 'Welcome to 80 knee! Connect with friends, chat in real-time, and purchase airtime/data directly through your bank account 🚀',
+        likes: 24,
+        isLiked: false,
+        comments: ['Amazing app!', 'Love the direct bank payment feature!']
+      }
+    ];
 
+    function renderPosts() {
       const container = document.getElementById('posts-container');
-      const postCard = document.createElement('div');
-      postCard.className = 'card';
-      postCard.innerHTML = `
-        <h4>${currentUser} (You)</h4>
-        <p style="font-size: 14px; color: #cbd5e1; margin: 4px 0 8px 0;">${text}</p>
-        <span onclick="likePost(this)" style="font-size: 13px; color: #f43f5e; cursor: pointer;">🤍 0 Likes</span>
-      `;
-      container.prepend(postCard);
+      container.innerHTML = '';
+
+      posts.forEach(post => {
+        const isMine = post.author === currentUser;
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="post-header">
+            <h4 style="color:#38bdf8;">@${post.author}</h4>
+            ${isMine ? `<span class="edit-btn" onclick="editPost(${post.id})">✏️ Edit</span>` : ''}
+          </div>
+          <p id="post-content-${post.id}" style="font-size: 14px; color: #cbd5e1; line-height: 1.4; margin-bottom: 10px;">${post.content}</p>
+          
+          <div class="post-actions">
+            <span onclick="toggleLike(${post.id})" id="like-btn-${post.id}">
+              ${post.isLiked ? '❤️' : '🤍'} ${post.likes}
+            </span>
+            <span onclick="toggleComments(${post.id})">
+              💬 ${post.comments.length} Comments
+            </span>
+            <span onclick="sharePost(${post.id})">
+              🔗 Share
+            </span>
+          </div>
+
+          <!-- Expandable Comments -->
+          <div class="comments-box" id="comments-${post.id}">
+            <div id="comment-list-${post.id}" style="font-size: 13px; color: #94a3b8; display:flex; flex-direction:column; gap:4px; margin-bottom:8px;">
+              ${post.comments.map(c => `<div>• ${c}</div>`).join('')}
+            </div>
+            <div style="display:flex; gap:6px;">
+              <input type="text" id="comment-input-${post.id}" class="input-box" style="margin:0; padding:8px 10px; font-size:12px;" placeholder="Write a comment...">
+              <button class="btn btn-blue" style="width:auto; padding:0 12px; font-size:12px;" onclick="addComment(${post.id})">Reply</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function createPost() {
+      const text = document.getElementById('post-input').value.trim();
+      if (!text) return;
+      posts.unshift({
+        id: Date.now(),
+        author: currentUser,
+        content: text,
+        likes: 0,
+        isLiked: false,
+        comments: []
+      });
+      document.getElementById('post-input').value = '';
+      renderPosts();
+    }
+
+    function editPost(id) {
+      const post = posts.find(p => p.id === id);
+      if (!post) return;
+      const newText = prompt('Edit your post:', post.content);
+      if (newText !== null && newText.trim() !== '') {
+        post.content = newText.trim();
+        renderPosts();
+      }
+    }
+
+    function toggleLike(id) {
+      const post = posts.find(p => p.id === id);
+      if (!post) return;
+      post.isLiked = !post.isLiked;
+      post.likes += post.isLiked ? 1 : -1;
+      renderPosts();
+    }
+
+    function toggleComments(id) {
+      const box = document.getElementById(`comments-${id}`);
+      box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function addComment(id) {
+      const input = document.getElementById(`comment-input-${id}`);
+      const val = input.value.trim();
+      if (!val) return;
+      const post = posts.find(p => p.id === id);
+      post.comments.push(`${currentUser}: ${val}`);
       input.value = '';
+      renderPosts();
+      document.getElementById(`comments-${id}`).style.display = 'block';
     }
 
-    function likePost(el) {
-      let isLiked = el.innerText.includes('❤️');
-      let parts = el.innerText.split(' ');
-      let count = parseInt(parts[1]) || 0;
-      count = isLiked ? count - 1 : count + 1;
-      el.innerText = (isLiked ? '🤍 ' : '❤️ ') + count + ' Likes';
+    async function sharePost(id) {
+      const post = posts.find(p => p.id === id);
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: '80 knee Post',
+            text: `"${post.content}" - by @${post.author} on 80 knee`,
+            url: window.location.href
+          });
+        } catch (err) { /* Share dismissed */ }
+      } else {
+        navigator.clipboard.writeText(`"${post.content}" - by @${post.author} on 80 knee`);
+        alert('Post copied to clipboard! Share it with your friends.');
+      }
     }
 
-    // 4. Interactive Chat (With Instant Auto-Reply)
+    // ==========================================
+    // 4. WHATSAPP STYLE DIRECT MESSAGING
+    // ==========================================
+    let contacts = [
+      { id: 1, name: 'Chinedu Eze', avatar: 'C', lastMsg: 'Are you online?', messages: [{ text: 'Hey bro, are you active on 80 knee?', isMe: false }] },
+      { id: 2, name: 'Amina Bello', avatar: 'A', lastMsg: 'Thanks for the airtime!', messages: [{ text: 'Thanks for the airtime!', isMe: false }] },
+      { id: 3, name: '80 knee Support', avatar: 'S', lastMsg: 'Welcome! Need assistance?', messages: [{ text: 'Welcome to 80 knee! How can we assist you today?', isMe: false }] }
+    ];
+    let activeContact = null;
+
+    function renderContacts() {
+      const list = document.getElementById('contacts-list');
+      list.innerHTML = '';
+      contacts.forEach(c => {
+        const item = document.createElement('div');
+        item.className = 'contact-item';
+        item.onclick = () => openChat(c.id);
+        item.innerHTML = `
+          <div class="avatar">${c.avatar}</div>
+          <div style="flex:1;">
+            <div style="font-weight:bold; font-size:15px;">${c.name}</div>
+            <div style="font-size:12px; color:#94a3b8;" id="contact-last-${c.id}">${c.lastMsg}</div>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function openChat(id) {
+      activeContact = contacts.find(c => c.id === id);
+      document.getElementById('active-chat-name').innerText = activeContact.name;
+      document.getElementById('active-chat-avatar').innerText = activeContact.avatar;
+      document.getElementById('chat-view').style.display = 'flex';
+      renderChatMessages();
+    }
+
+    function closeChat() {
+      document.getElementById('chat-view').style.display = 'none';
+      renderContacts();
+    }
+
+    function renderChatMessages() {
+      const body = document.getElementById('chat-body');
+      body.innerHTML = '';
+      activeContact.messages.forEach(m => {
+        const bubble = document.createElement('div');
+        bubble.className = `bubble ${m.isMe ? 'me' : 'them'}`;
+        bubble.innerText = m.text;
+        body.appendChild(bubble);
+      });
+      body.scrollTop = body.scrollHeight;
+    }
+
     function sendChatMessage() {
       const input = document.getElementById('chat-input');
-      const msg = input.value.trim();
-      if (!msg) return;
+      const text = input.value.trim();
+      if (!text || !activeContact) return;
 
-      const chatBox = document.getElementById('chat-box');
-      
-      // User message bubble
-      const userBubble = document.createElement('div');
-      userBubble.className = 'bubble me';
-      userBubble.innerText = msg;
-      chatBox.appendChild(userBubble);
+      activeContact.messages.push({ text: text, isMe: true });
+      activeContact.lastMsg = text;
       input.value = '';
-      chatBox.scrollTop = chatBox.scrollHeight;
+      renderChatMessages();
 
-      // Simulated instant reply from support
+      // Simulated realistic response from the contact
       setTimeout(() => {
-        const replyBubble = document.createElement('div');
-        replyBubble.className = 'bubble them';
-        replyBubble.innerText = `Thanks for reaching out to 80 knee, ${currentUser}! We received your message: "${msg}"`;
-        chatBox.appendChild(replyBubble);
-        chatBox.scrollTop = chatBox.scrollHeight;
-      }, 800);
+        let reply = `Got your message "${text}"! Catch you soon.`;
+        if (activeContact.name.includes('Support')) {
+          reply = `Hello ${currentUser}, support has noted your request regarding "${text}".`;
+        }
+        activeContact.messages.push({ text: reply, isMe: false });
+        activeContact.lastMsg = reply;
+        renderChatMessages();
+      }, 900);
     }
 
-    // 5. VTU Airtime & Data Purchases
+    // ==========================================
+    // 5. VTU & DIRECT BANK ACCOUNT PAYMENT
+    // ==========================================
     function setVtuMode(mode) {
       vtuMode = mode;
       document.getElementById('toggle-airtime').className = mode === 'airtime' ? 'active' : '';
@@ -209,40 +764,45 @@
     function pickNet(btn) {
       document.querySelectorAll('.net-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
+      selectedNet = btn.innerText;
     }
 
-    function processPurchase() {
+    function openBankCheckout() {
       const phone = document.getElementById('vtu-phone').value.trim();
       if (!phone || phone.length < 10) {
-        alert('Please enter a valid phone number!');
+        alert('Please enter a valid recipient phone number!');
         return;
       }
 
-      let cost = 0;
+      let amount = 0;
       let label = '';
 
       if (vtuMode === 'airtime') {
-        cost = parseFloat(document.getElementById('airtime-amount').value);
-        if (!cost || cost < 50) { 
-          alert('Minimum airtime amount is ₦50'); 
-          return; 
+        amount = parseFloat(document.getElementById('airtime-amount').value);
+        if (!amount || amount < 50) {
+          alert('Minimum airtime amount is ₦50');
+          return;
         }
-        label = `₦${cost} Airtime`;
+        label = `₦${amount} ${selectedNet} Airtime`;
       } else {
-        const plan = document.getElementById('data-plan-select');
-        cost = parseFloat(plan.value);
-        label = plan.options[plan.selectedIndex].text;
+        const select = document.getElementById('data-plan-select');
+        amount = parseFloat(select.value);
+        label = `${selectedNet} ${select.options[select.selectedIndex].text}`;
       }
 
-      if (walletBalance < cost) {
-        alert('Insufficient wallet balance! Please fund your 80 knee wallet.');
-        return;
-      }
+      pendingPurchase = { amount, label, phone };
+      document.getElementById('modal-amount').innerText = `₦${amount.toLocaleString()}`;
+      document.getElementById('bank-modal').style.display = 'flex';
+    }
 
-      // Deduct balance and update display
-      walletBalance -= cost;
-      updateWalletDisplay();
-      alert(`🎉 Success! ${label} recharge sent to ${phone}. ₦${cost} deducted from your wallet.`);
+    function closeBankCheckout() {
+      document.getElementById('bank-modal').style.display = 'none';
+    }
+
+    function completeBankPayment() {
+      const bank = document.getElementById('bank-select').value;
+      closeBankCheckout();
+      alert(`✅ Payment of ₦${pendingPurchase.amount} Authorized via ${bank}!\n\nYour ${pendingPurchase.label} has been delivered to ${pendingPurchase.phone}.`);
     }
   </script>
 </body>
