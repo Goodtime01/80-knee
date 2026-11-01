@@ -1,4 +1,4 @@
-1<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -675,9 +675,12 @@
     }
 
     function inviteContact(phone, name) {
-      const text = encodeURIComponent(`Hello ${name}, join me on 80 knee to chat, post, and recharge airtime/data: https://goodtime01.github.io/80knee/`);
-      window.open(`https://wa.me/234${phone.substring(1)}?text=${text}`, '_blank');
+      const text = encodeURIComponent(`Hello ${name}, join me on 80 knee app! Let's chat, make posts, and buy airtime/data directly. Open/Install the app here: https://goodtime01.github.io/80knee/`);
+      
+      // Opens your phone's default SMS app addressed directly to their phone number
+      window.location.href = `sms:${phone}?body=${text}`;
     }
+    
 
     function openChat(recipientPhone, recipientName) {
       const isContact = mySyncedContacts.some(c => c.phone === recipientPhone);
@@ -734,7 +737,6 @@
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
     }
-
 // ==========================================
     // 4. CONTACT-ONLY FEED & POST EDITING
     // ==========================================
