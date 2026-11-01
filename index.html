@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>80 knee</title>
+
+  <!-- 1. Paystack Official Payment SDK -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+
+  <!-- 2. Firebase Cloud Database SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
   <style>
     * { 
       box-sizing: border-box; 
@@ -40,19 +48,20 @@
       background: #0f172a; 
       border: 1px solid #334155; 
       color: #38bdf8; 
-      padding: 4px 10px; 
+      padding: 5px 12px; 
       border-radius: 20px; 
       font-size: 12px; 
       font-weight: 600; 
     }
 
-    /* Screen Container */
+    /* Screen Layouts */
     .screen { 
       flex: 1; 
       overflow-y: auto; 
       padding: 16px; 
       display: none; 
       flex-direction: column;
+      padding-bottom: 85px !important; /* Space for bottom nav */
     }
     .screen.active { 
       display: flex; 
@@ -105,7 +114,7 @@
       padding: 0 8px; 
     }
 
-    /* General Inputs & Buttons */
+    /* Inputs & Buttons */
     .input-box { 
       width: 100%; 
       padding: 12px; 
@@ -129,7 +138,9 @@
       font-weight: 700; 
       cursor: pointer; 
     }
-    .btn-blue { background: #0284c7; }
+    .btn-blue { 
+      background: #0284c7; 
+    }
 
     /* Feed Post Cards */
     .card { 
@@ -204,7 +215,7 @@
       right: 0; 
       bottom: 0; 
       background: #0f172a; 
-      z-index: 50; 
+      z-index: 10000; 
       display: none; 
       flex-direction: column; 
     }
@@ -241,73 +252,7 @@
       border-bottom-left-radius: 2px; 
     }
 
-    /* Payment Modal (Bank Account Direct) */
-    .modal-overlay { 
-      position: fixed; 
-      inset: 0; 
-      background: rgba(0, 0, 0, 0.75); 
-      z-index: 100; 
-      display: none; 
-      justify-content: center; 
-      align-items: flex-end; 
-    }
-    .modal-sheet { 
-      background: #1e293b; 
-      width: 100%; 
-      max-width: 500px; 
-      border-radius: 20px 20px 0 0; 
-      padding: 20px; 
-      border-top: 1px solid #334155; 
-    }
-    .bank-card { 
-      background: #0f172a; 
-      padding: 14px; 
-      border-radius: 12px; 
-      margin: 12px 0; 
-      border: 1px solid #38bdf8; 
-    }
-
-
-
-
-/* Bottom Navigation Bar - Fixed & Always Visible */
-    .nav-bar { 
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 65px;
-      background: #1e293b; 
-      display: flex !important; 
-      justify-content: space-around; 
-      align-items: center;
-      border-top: 1px solid #334155; 
-      z-index: 9999;
-      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
-    }
-    .screen {
-      padding-bottom: 85px !important; /* Prevents posts from hiding behind the buttons */
-    }
-
-
-    .nav-item { 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      color: #94a3b8; 
-      font-size: 11px; 
-      cursor: pointer; 
-    }
-    .nav-item.active { 
-      color: #38bdf8; 
-      font-weight: 700; 
-    }
-    .nav-icon { 
-      font-size: 19px; 
-      margin-bottom: 2px; 
-    }
-
-    /* VTU Networks */
+    /* VTU & Telecom */
     .network-grid { 
       display: grid; 
       grid-template-columns: repeat(4, 1fr); 
@@ -351,30 +296,44 @@
       background: #0284c7; 
       color: white; 
     }
+
+    /* Fixed Bottom Navigation Bar */
+    .nav-bar { 
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background: #1e293b; 
+      display: flex !important; 
+      justify-content: space-around; 
+      align-items: center;
+      border-top: 1px solid #334155; 
+      z-index: 9999;
+      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+    }
+    .nav-item { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      color: #94a3b8; 
+      font-size: 11px; 
+      cursor: pointer; 
+    }
+    .nav-item.active { 
+      color: #38bdf8; 
+      font-weight: 700; 
+    }
+    .nav-icon { 
+      font-size: 19px; 
+      margin-bottom: 2px; 
+    }
   </style>
-
-
-
-
-<!-- Paystack Official Payment SDK -->
-  <script src="https://js.paystack.co/v1/inline.js"></script>
-
-
-
-
-
-<!-- Firebase Cloud Database SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-
-
-
 </head>
 <body>
 
 
-<!-- Top Bar (Wallet removed - Direct Bank Integration) -->
+<!-- Top App Bar -->
   <div class="top-bar">
     <div class="logo">80 knee</div>
     <div class="user-pill" id="user-display">@Guest</div>
@@ -420,7 +379,7 @@
       <button class="btn btn-blue" onclick="createPost()">Share Post</button>
     </div>
 
-    <!-- Posts Container -->
+    <!-- Live Cloud Posts Container -->
     <div id="posts-container"></div>
   </div>
 
@@ -430,19 +389,19 @@
     <div id="contacts-list"></div>
   </div>
 
-  <!-- 1-on-1 Chat Fullscreen Room (WhatsApp Style) -->
+  <!-- 1-on-1 Fullscreen Chat Room (WhatsApp Style) -->
   <div id="chat-view" class="chat-view">
     <div class="chat-header">
-      <span onclick="closeChat()" style="font-size: 20px; cursor: pointer; padding-right: 6px;">←</span>
+      <span onclick="closeChat()" style="font-size: 22px; cursor: pointer; padding-right: 8px;">←</span>
       <div class="avatar" id="active-chat-avatar" style="width:36px; height:36px; font-size:14px;">?</div>
       <div>
         <div style="font-weight: bold; font-size: 15px;" id="active-chat-name">Contact</div>
-        <div style="font-size: 11px; color: #10b981;">Online</div>
+        <div style="font-size: 11px; color: #10b981;">Online (Cloud Synced)</div>
       </div>
     </div>
     <div class="chat-body" id="chat-body"></div>
     <div style="padding: 10px; background: #1e293b; display: flex; gap: 8px;">
-      <input type="text" id="chat-input" class="input-box" style="margin:0;" placeholder="Message...">
+      <input type="text" id="chat-input" class="input-box" style="margin:0;" placeholder="Type a message...">
       <button class="btn btn-blue" style="width:auto; padding: 0 16px;" onclick="sendChatMessage()">Send</button>
     </div>
   </div>
@@ -470,7 +429,7 @@
       <input type="number" id="airtime-amount" class="input-box" placeholder="e.g. 500">
     </div>
 
-    <!-- Data -->
+    <!-- Data Bundles -->
     <div id="data-section" style="display:none;">
       <label style="font-size: 13px; color: #94a3b8;">Select Data Bundle</label>
       <select id="data-plan-select" class="input-box" style="background:#0f172a;">
@@ -485,35 +444,8 @@
     <button class="btn" onclick="openBankCheckout()">Pay From Bank Account</button>
   </div>
 
-  <!-- Bank Account Direct Checkout Modal -->
-  <div class="modal-overlay" id="bank-modal">
-    <div class="modal-sheet">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="font-size: 17px; color: #38bdf8;">Pay From Bank Account</h3>
-        <span onclick="closeBankCheckout()" style="cursor:pointer; font-size:18px;">✕</span>
-      </div>
-      <p style="font-size:13px; color:#94a3b8;">Total to Pay: <b id="modal-amount" style="color:white; font-size:15px;">₦0</b></p>
-      
-      <div class="bank-card">
-        <label style="font-size: 12px; color: #94a3b8;">Select Your Bank</label>
-        <select id="bank-select" class="input-box" style="margin-bottom:8px;">
-          <option>OPay Digital Services</option>
-          <option>Kuda Microfinance Bank</option>
-          <option>GTBank (Guaranty Trust)</option>
-          <option>Zenith Bank</option>
-          <option>Access Bank</option>
-          <option>Moniepoint MFB</option>
-          <option>Debit / Credit Card</option>
-        </select>
-        <p style="font-size:12px; color:#10b981;">Direct bank transfer / instant debit enabled</p>
-      </div>
-
-      <button class="btn" onclick="completeBankPayment()">Authorize & Complete Payment</button>
-    </div>
-  </div>
-
-  <!-- Bottom Navigation Bar -->
-  <div class="nav-bar" id="main-nav" style="display:none;">
+  <!-- Fixed Bottom Navigation Bar -->
+  <div class="nav-bar" id="main-nav">
     <div class="nav-item active" onclick="switchTab('feed-screen', this)">
       <div class="nav-icon">📰</div>
       <span>Feed</span>
@@ -528,13 +460,9 @@
     </div>
   </div>
 
-
 <script>
-
-
-
-// ==========================================
-    // 1. YOUR REAL FIREBASE CLOUD CONFIG
+    // ==========================================
+    // 1. YOUR REAL FIREBASE CLOUD DATABASE
     // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyDe36CpQIndbGJ7Wq9ViBQJZXRYJY4lD9U",
@@ -545,22 +473,19 @@
       appId: "1:815262892973:web:d8e3e5f897ed50ffff1724"
     };
 
-    // Connect to Google Cloud Database
+    // Initialize Firebase & Cloud Firestore
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-
-
-
-
 
     let currentUser = null;
     let isLoginMode = false;
     let vtuMode = 'airtime';
     let selectedNet = 'MTN';
-    let pendingPurchase = { amount: 0, label: '', phone: '' };
+    let activeChatContact = null;
+    let chatUnsubscribe = null;
 
     // ==========================================
-    // 1. GOOGLE SIGN-IN & AUTHENTICATION TOGGLE
+    // 2. AUTHENTICATION & APP ENTRY
     // ==========================================
     function toggleAuthMode() {
       isLoginMode = !isLoginMode;
@@ -573,11 +498,10 @@
     }
 
     function signInWithGoogle() {
-      // Simulate Google Sign-In prompt
       let defaultName = 'Etini Obop';
-      let user = prompt('Google Account Picker: Confirm your name to continue with Google', defaultName);
+      let user = prompt('Enter or confirm your display name:', defaultName);
       if (!user) user = defaultName;
-      enterApp(user);
+      enterApp(user.trim());
     }
 
     function handleManualAuth() {
@@ -595,14 +519,12 @@
       document.getElementById('user-display').innerText = '@' + currentUser;
       document.getElementById('auth-screen').classList.remove('active');
       document.getElementById('feed-screen').classList.add('active');
-      document.getElementById('main-nav').style.display = 'flex';
-      renderPosts();
+      
+      // Start real-time cloud listeners
+      listenToLiveFeed();
       renderContacts();
     }
 
-    // ==========================================
-    // 2. NAVIGATION
-    // ==========================================
     function switchTab(screenId, element) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -611,92 +533,111 @@
     }
 
     // ==========================================
-    // 3. SOCIAL FEED (Edit, Like, Comments, Share)
+    // 3. REAL-TIME MULTI-USER SOCIAL FEED
     // ==========================================
-    let posts = [
-      {
-        id: 1,
-        author: '80 knee Team',
-        content: 'Welcome to 80 knee! Connect with friends, chat in real-time, and purchase airtime/data directly through your bank account 🚀',
-        likes: 24,
-        isLiked: false,
-        comments: ['Amazing app!', 'Love the direct bank payment feature!']
-      }
-    ];
+    function listenToLiveFeed() {
+      db.collection('posts')
+        .orderBy('timestamp', 'desc')
+        .onSnapshot(snapshot => {
+          const container = document.getElementById('posts-container');
+          container.innerHTML = '';
 
-    function renderPosts() {
-      const container = document.getElementById('posts-container');
-      container.innerHTML = '';
+          if (snapshot.empty) {
+            container.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No posts yet. Be the first to share something on 80 knee!</p>';
+            return;
+          }
 
-      posts.forEach(post => {
-        const isMine = post.author === currentUser;
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <div class="post-header">
-            <h4 style="color:#38bdf8;">@${post.author}</h4>
-            ${isMine ? `<span class="edit-btn" onclick="editPost(${post.id})">✏️ Edit</span>` : ''}
-          </div>
-          <p id="post-content-${post.id}" style="font-size: 14px; color: #cbd5e1; line-height: 1.4; margin-bottom: 10px;">${post.content}</p>
-          
-          <div class="post-actions">
-            <span onclick="toggleLike(${post.id})" id="like-btn-${post.id}">
-              ${post.isLiked ? '❤️' : '🤍'} ${post.likes}
-            </span>
-            <span onclick="toggleComments(${post.id})">
-              💬 ${post.comments.length} Comments
-            </span>
-            <span onclick="sharePost(${post.id})">
-              🔗 Share
-            </span>
-          </div>
+          snapshot.forEach(doc => {
+            const post = { id: doc.id, ...doc.data() };
+            const isMine = post.author === currentUser;
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+              <div class="post-header">
+                <h4 style="color:#38bdf8;">@${post.author}</h4>
+                ${isMine ? `<span class="edit-btn" onclick="editPost('${post.id}', '${encodeURIComponent(post.content)}')">✏️ Edit</span>` : ''}
+              </div>
+              <p style="font-size: 14px; color: #cbd5e1; line-height: 1.4; margin-bottom: 10px;">${post.content}</p>
+              
+              <div class="post-actions">
+                <span onclick="toggleLike('${post.id}', ${post.likes || 0})">
+                  ${(post.likedBy || []).includes(currentUser) ? '❤️' : '🤍'} ${post.likes || 0}
+                </span>
+                <span onclick="toggleComments('${post.id}')">
+                  💬 ${(post.comments || []).length} Comments
+                </span>
+                <span onclick="sharePost('${encodeURIComponent(post.content)}', '${post.author}')">
+                  🔗 Share
+                </span>
+              </div>
 
-          <!-- Expandable Comments -->
-          <div class="comments-box" id="comments-${post.id}">
-            <div id="comment-list-${post.id}" style="font-size: 13px; color: #94a3b8; display:flex; flex-direction:column; gap:4px; margin-bottom:8px;">
-              ${post.comments.map(c => `<div>• ${c}</div>`).join('')}
-            </div>
-            <div style="display:flex; gap:6px;">
-              <input type="text" id="comment-input-${post.id}" class="input-box" style="margin:0; padding:8px 10px; font-size:12px;" placeholder="Write a comment...">
-              <button class="btn btn-blue" style="width:auto; padding:0 12px; font-size:12px;" onclick="addComment(${post.id})">Reply</button>
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
+              <!-- Collapsible Comments -->
+              <div class="comments-box" id="comments-${post.id}">
+                <div style="font-size: 13px; color: #94a3b8; display:flex; flex-direction:column; gap:4px; margin-bottom:8px;">
+                  ${(post.comments || []).map(c => `<div>• <b>${c.user}:</b> ${c.text}</div>`).join('')}
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <input type="text" id="comment-input-${post.id}" class="input-box" style="margin:0; padding:8px 10px; font-size:12px;" placeholder="Write a comment...">
+                  <button class="btn btn-blue" style="width:auto; padding:0 12px; font-size:12px;" onclick="addComment('${post.id}')">Reply</button>
+                </div>
+              </div>
+            `;
+            container.appendChild(card);
+          });
+        }, error => {
+          console.error("Firestore Feed Error:", error);
+        });
     }
 
-    function createPost() {
-      const text = document.getElementById('post-input').value.trim();
+    async function createPost() {
+      const input = document.getElementById('post-input');
+      const text = input.value.trim();
       if (!text) return;
-      posts.unshift({
-        id: Date.now(),
-        author: currentUser,
-        content: text,
-        likes: 0,
-        isLiked: false,
-        comments: []
-      });
-      document.getElementById('post-input').value = '';
-      renderPosts();
-    }
 
-    function editPost(id) {
-      const post = posts.find(p => p.id === id);
-      if (!post) return;
-      const newText = prompt('Edit your post:', post.content);
-      if (newText !== null && newText.trim() !== '') {
-        post.content = newText.trim();
-        renderPosts();
+      try {
+        await db.collection('posts').add({
+          author: currentUser,
+          content: text,
+          likes: 0,
+          likedBy: [],
+          comments: [],
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        input.value = '';
+      } catch (err) {
+        alert('Could not save post to cloud: ' + err.message);
       }
     }
 
-    function toggleLike(id) {
-      const post = posts.find(p => p.id === id);
-      if (!post) return;
-      post.isLiked = !post.isLiked;
-      post.likes += post.isLiked ? 1 : -1;
-      renderPosts();
+    async function editPost(id, oldTextEncoded) {
+      const oldText = decodeURIComponent(oldTextEncoded);
+      const newText = prompt('Edit your post:', oldText);
+      if (newText !== null && newText.trim() !== '') {
+        await db.collection('posts').doc(id).update({
+          content: newText.trim()
+        });
+      }
+    }
+
+    async function toggleLike(id, currentLikes) {
+      const ref = db.collection('posts').doc(id);
+      const doc = await ref.get();
+      if (!doc.exists) return;
+      
+      const likedBy = doc.data().likedBy || [];
+      const isLiked = likedBy.includes(currentUser);
+
+      if (isLiked) {
+        await ref.update({
+          likes: Math.max(0, currentLikes - 1),
+          likedBy: firebase.firestore.FieldValue.arrayRemove(currentUser)
+        });
+      } else {
+        await ref.update({
+          likes: currentLikes + 1,
+          likedBy: firebase.firestore.FieldValue.arrayUnion(currentUser)
+        });
+      }
     }
 
     function toggleComments(id) {
@@ -704,42 +645,38 @@
       box.style.display = box.style.display === 'block' ? 'none' : 'block';
     }
 
-    function addComment(id) {
+    async function addComment(id) {
       const input = document.getElementById(`comment-input-${id}`);
       const val = input.value.trim();
       if (!val) return;
-      const post = posts.find(p => p.id === id);
-      post.comments.push(`${currentUser}: ${val}`);
+
+      await db.collection('posts').doc(id).update({
+        comments: firebase.firestore.FieldValue.arrayUnion({
+          user: currentUser,
+          text: val
+        })
+      });
       input.value = '';
-      renderPosts();
-      document.getElementById(`comments-${id}`).style.display = 'block';
     }
 
-    async function sharePost(id) {
-      const post = posts.find(p => p.id === id);
+    function sharePost(contentEncoded, author) {
+      const text = `"${decodeURIComponent(contentEncoded)}" — @${author} on 80 knee`;
       if (navigator.share) {
-        try {
-          await navigator.share({
-            title: '80 knee Post',
-            text: `"${post.content}" - by @${post.author} on 80 knee`,
-            url: window.location.href
-          });
-        } catch (err) { /* Share dismissed */ }
+        navigator.share({ title: '80 knee', text: text, url: window.location.href });
       } else {
-        navigator.clipboard.writeText(`"${post.content}" - by @${post.author} on 80 knee`);
-        alert('Post copied to clipboard! Share it with your friends.');
+        navigator.clipboard.writeText(text);
+        alert('Post copied to clipboard!');
       }
     }
 
     // ==========================================
-    // 4. WHATSAPP STYLE DIRECT MESSAGING
+    // 4. REAL-TIME CLOUD MESSAGING (WhatsApp Style)
     // ==========================================
     let contacts = [
-      { id: 1, name: 'Chinedu Eze', avatar: 'C', lastMsg: 'Are you online?', messages: [{ text: 'Hey bro, are you active on 80 knee?', isMe: false }] },
-      { id: 2, name: 'Amina Bello', avatar: 'A', lastMsg: 'Thanks for the airtime!', messages: [{ text: 'Thanks for the airtime!', isMe: false }] },
-      { id: 3, name: '80 knee Support', avatar: 'S', lastMsg: 'Welcome! Need assistance?', messages: [{ text: 'Welcome to 80 knee! How can we assist you today?', isMe: false }] }
+      { id: 'support', name: '80 knee Support', avatar: 'S' },
+      { id: 'chinedu', name: 'Chinedu Eze', avatar: 'C' },
+      { id: 'amina', name: 'Amina Bello', avatar: 'A' }
     ];
-    let activeContact = null;
 
     function renderContacts() {
       const list = document.getElementById('contacts-list');
@@ -747,67 +684,70 @@
       contacts.forEach(c => {
         const item = document.createElement('div');
         item.className = 'contact-item';
-        item.onclick = () => openChat(c.id);
+        item.onclick = () => openChat(c);
         item.innerHTML = `
           <div class="avatar">${c.avatar}</div>
           <div style="flex:1;">
             <div style="font-weight:bold; font-size:15px;">${c.name}</div>
-            <div style="font-size:12px; color:#94a3b8;" id="contact-last-${c.id}">${c.lastMsg}</div>
+            <div style="font-size:12px; color:#10b981;">Tap to chat in real-time</div>
           </div>
         `;
         list.appendChild(item);
       });
     }
 
-    function openChat(id) {
-      activeContact = contacts.find(c => c.id === id);
-      document.getElementById('active-chat-name').innerText = activeContact.name;
-      document.getElementById('active-chat-avatar').innerText = activeContact.avatar;
+    function openChat(contact) {
+      activeChatContact = contact;
+      document.getElementById('active-chat-name').innerText = contact.name;
+      document.getElementById('active-chat-avatar').innerText = contact.avatar;
       document.getElementById('chat-view').style.display = 'flex';
-      renderChatMessages();
+
+      if (chatUnsubscribe) chatUnsubscribe();
+
+      // Creates a shared chat room ID between the two users
+      const chatId = [currentUser, contact.name].sort().join('_');
+      chatUnsubscribe = db.collection('chats').doc(chatId).collection('messages')
+        .orderBy('timestamp', 'asc')
+        .onSnapshot(snapshot => {
+          const body = document.getElementById('chat-body');
+          body.innerHTML = '';
+          snapshot.forEach(doc => {
+            const m = doc.data();
+            const bubble = document.createElement('div');
+            bubble.className = `bubble ${m.sender === currentUser ? 'me' : 'them'}`;
+            bubble.innerText = m.text;
+            body.appendChild(bubble);
+          });
+          body.scrollTop = body.scrollHeight;
+        });
     }
 
     function closeChat() {
       document.getElementById('chat-view').style.display = 'none';
-      renderContacts();
+      if (chatUnsubscribe) {
+        chatUnsubscribe();
+        chatUnsubscribe = null;
+      }
     }
 
-    function renderChatMessages() {
-      const body = document.getElementById('chat-body');
-      body.innerHTML = '';
-      activeContact.messages.forEach(m => {
-        const bubble = document.createElement('div');
-        bubble.className = `bubble ${m.isMe ? 'me' : 'them'}`;
-        bubble.innerText = m.text;
-        body.appendChild(bubble);
-      });
-      body.scrollTop = body.scrollHeight;
-    }
-
-    function sendChatMessage() {
+    async function sendChatMessage() {
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
-      if (!text || !activeContact) return;
+      if (!text || !activeChatContact) return;
 
-      activeContact.messages.push({ text: text, isMe: true });
-      activeContact.lastMsg = text;
+      const chatId = [currentUser, activeChatContact.name].sort().join('_');
       input.value = '';
-      renderChatMessages();
 
-      // Simulated realistic response from the contact
-      setTimeout(() => {
-        let reply = `Got your message "${text}"! Catch you soon.`;
-        if (activeContact.name.includes('Support')) {
-          reply = `Hello ${currentUser}, support has noted your request regarding "${text}".`;
-        }
-        activeContact.messages.push({ text: reply, isMe: false });
-        activeContact.lastMsg = reply;
-        renderChatMessages();
-      }, 900);
+      await db.collection('chats').doc(chatId).collection('messages').add({
+        sender: currentUser,
+        receiver: activeChatContact.name,
+        text: text,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
     }
 
     // ==========================================
-    // 5. VTU & DIRECT BANK ACCOUNT PAYMENT
+    // 5. VTU & PAYSTACK DIRECT BANK CHECKOUT
     // ==========================================
     function setVtuMode(mode) {
       vtuMode = mode;
@@ -823,15 +763,6 @@
       selectedNet = btn.innerText;
     }
 
-    
-
-
-
-
-
-// ==========================================
-    // REAL PAYSTACK BANK & CARD PAYMENT GATEWAY
-    // ==========================================
     function openBankCheckout() {
       const phone = document.getElementById('vtu-phone').value.trim();
       if (!phone || phone.length < 10) {
@@ -859,13 +790,8 @@
     }
 
     function payWithPaystack(amount, label, phone) {
-      // Paste your pk_test_ or pk_live_ key from Paystack here
-      // For now, this demo public key allows you to test the checkout immediately
-      const PAYSTACK_PUBLIC_KEY = 'pk_test_ab64aabc8e8f5514a305cc37c89039f5ad54ac85';
-
-
-
-
+      // Your Paystack test public key
+      const PAYSTACK_PUBLIC_KEY = 'pk_test_cb2462e92ec4eb68705be2ffc5cf7b322a45a329';
 
       const userEmail = currentUser && currentUser.includes('@') 
         ? currentUser 
@@ -874,12 +800,11 @@
       const handler = PaystackPop.setup({
         key: PAYSTACK_PUBLIC_KEY,
         email: userEmail,
-        amount: amount * 100, // Paystack charges in kobo (e.g. ₦500 = 50000 kobo)
+        amount: amount * 100, // Converts Naira to Kobo
         currency: 'NGN',
         ref: '80KNEE_' + Math.floor((Math.random() * 1000000000) + 1),
         channels: ['bank_transfer', 'card', 'ussd', 'bank'],
         callback: function(response) {
-          // Triggered when payment is confirmed by the bank
           alert(`🎉 Payment Successful!\n\nReference: ${response.reference}\n\nYour ${label} for ${phone} is now being processed.`);
         },
         onClose: function() {
@@ -889,26 +814,6 @@
 
       handler.openIframe();
     }
-
-
-
-
-
-const firebaseConfig = {
-    apiKey: "AIzaSyDe36CpQIndbGJ7Wq9ViBQJZXRYJY4lD9U",
-    authDomain: "eighty-knee.firebaseapp.com",
-    projectId: "eighty-knee",
-    storageBucket: "eighty-knee.firebasestorage.app",
-    messagingSenderId: "815262892973",
-    appId: "1:815262892973:web:d8e3e5f897ed50ffff1724"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-
-
-
   </script>
 </body>
 </html>
