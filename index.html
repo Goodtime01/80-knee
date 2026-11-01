@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>80 knee</title>
 
-  <!-- 1. Paystack Official Payment SDK -->
+  <!-- Paystack & Firebase Cloud SDKs -->
   <script src="https://js.paystack.co/v1/inline.js"></script>
-
-  <!-- 2. Firebase Cloud Database SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
@@ -28,7 +26,7 @@
       overflow: hidden; 
     }
     
-    /* Top Bar */
+    /* Top Header */
     .top-bar { 
       background: #1e293b; 
       padding: 12px 16px; 
@@ -67,7 +65,7 @@
       display: flex; 
     }
 
-    /* Strict Auth Screen */
+    /* Auth Screen */
     #auth-screen { 
       justify-content: center; 
       align-items: center; 
@@ -142,7 +140,7 @@
       background: #0284c7; 
     }
 
-/* Feed Post Cards */
+/* Post Cards */
     .card { 
       background: #1e293b; 
       border-radius: 14px; 
@@ -185,7 +183,7 @@
       display: none; 
     }
 
-    /* WhatsApp Style Chat & Contacts */
+    /* Contacts & Chat */
     .contact-item { 
       display: flex; 
       align-items: center; 
@@ -297,7 +295,7 @@
       color: white; 
     }
 
-    /* Fixed Bottom Navigation Bar */
+    /* Fixed Bottom Nav */
     .nav-bar { 
       position: fixed;
       bottom: 0;
@@ -332,19 +330,19 @@
 </head>
 <body>
 
-<!-- Top App Bar -->
+<!-- Header -->
   <div class="top-bar">
     <div class="logo">80 knee</div>
     <div class="user-pill" id="user-display">🔒 Sign In Required</div>
   </div>
 
-  <!-- Screen 0: Mandatory Global Auth Lockout -->
+  <!-- Screen 0: Strict Authentication Lockout -->
   <div id="auth-screen" class="screen active">
     <div class="auth-card">
       <h2 style="color:#38bdf8; margin-bottom: 6px;" id="auth-title">Welcome to 80 knee</h2>
       <p style="font-size:13px; color:#94a3b8; margin-bottom:16px;" id="auth-subtitle">Sign in or create an account to access 80 knee</p>
       
-      <!-- Google Auth Button -->
+      <!-- Google Auth -->
       <button class="google-btn" onclick="signInWithGoogle()">
         <svg width="18" height="18" viewBox="0 0 48 48">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -359,13 +357,13 @@
 
       <input type="email" id="auth-email" class="input-box" placeholder="Email Address (e.g. name@gmail.com)">
       <div id="phone-field-wrapper">
-        <input type="tel" id="auth-phone" class="input-box" placeholder="Phone Number with country code (e.g. +234...)">
+        <input type="tel" id="auth-phone" class="input-box" placeholder="Phone Number with country code (+234...)">
       </div>
       <input type="password" id="auth-password" class="input-box" placeholder="Password">
 
       <button class="btn btn-blue" id="auth-submit-btn" onclick="handleAuth()">Sign Up & Continue</button>
 
-      <!-- Toggle between Sign Up and Login -->
+      <!-- Toggle Sign Up vs Login -->
       <p style="font-size: 13px; color: #94a3b8; margin-top: 16px;">
         <span id="auth-toggle-label">Already have an account?</span> 
         <a href="javascript:void(0)" onclick="toggleAuthMode()" id="auth-toggle-btn" style="color: #38bdf8; font-weight: bold; text-decoration: none;">Log In</a>
@@ -373,7 +371,7 @@
     </div>
   </div>
 
-  <!-- Screen 1: Contact-Only Feed -->
+  <!-- Screen 1: Feed -->
   <div id="feed-screen" class="screen">
     <div class="card">
       <textarea id="post-input" class="input-box" rows="2" style="resize:none;" placeholder="Share a post with your contacts..."></textarea>
@@ -382,7 +380,7 @@
     <div id="posts-container"></div>
   </div>
 
-  <!-- Screen 2: WhatsApp Style Contacts & Chats -->
+  <!-- Screen 2: Contacts & Chats -->
   <div id="chat-screen" class="screen">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <h3 style="font-size: 15px; color: #94a3b8;">Phone Contacts</h3>
@@ -393,7 +391,7 @@
     <div id="contacts-list"></div>
   </div>
 
-  <!-- Fullscreen WhatsApp Chat Room -->
+  <!-- WhatsApp Style Chat Room -->
   <div id="chat-view" class="chat-view">
     <div class="chat-header">
       <span onclick="closeChat()" style="font-size: 22px; cursor: pointer; padding-right: 8px;">←</span>
@@ -410,7 +408,7 @@
     </div>
   </div>
 
-  <!-- Screen 3: VTU (Direct Bank Payment) -->
+  <!-- Screen 3: VTU Services -->
   <div id="vtu-screen" class="screen">
     <div class="vtu-toggle">
       <div id="toggle-airtime" class="active" onclick="setVtuMode('airtime')">Airtime</div>
@@ -462,9 +460,10 @@
     </div>
   </div>
 
+
 <script>
     // ==========================================
-    // 1. FIREBASE INITIALIZATION
+    // 1. FIREBASE CONFIGURATION (YOUR REAL KEYS)
     // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyDe36CpQIndbGJ7Wq9ViBQJZXRYJY4lD9U",
@@ -487,11 +486,10 @@
     let chatUnsubscribe = null;
     let mySyncedContacts = [];
 
-    // Global Phone Normalization (Supports any country)
+    // Global International Phone Normalization
     function cleanPhone(num) {
       if (!num) return '';
       let cleaned = num.trim().replace(/[\s\-\(\)]/g, '');
-      // Standardize Nigerian local format 080... to international +23480...
       if (cleaned.startsWith('0') && cleaned.length === 11) {
         cleaned = '+234' + cleaned.substring(1);
       }
@@ -499,7 +497,7 @@
     }
 
     // ==========================================
-    // 2. STRICT GLOBAL AUTHENTICATION GATE
+    // 2. STRICT AUTHENTICATION (EMAIL & GOOGLE)
     // ==========================================
     function toggleAuthMode() {
       isLoginMode = !isLoginMode;
@@ -524,7 +522,7 @@
         const data = userDoc.docs[0].data();
         completeLogin(data.email, data.phone);
       } else {
-        let phone = prompt('Enter your mobile phone number with country code (e.g. +234... or local):');
+        let phone = prompt('Enter your phone number with country code (e.g. +234... or local):');
         phone = cleanPhone(phone);
         if (!phone || phone.length < 8) {
           alert('A valid phone number is required to use 80 knee.');
@@ -592,7 +590,7 @@
 
       document.getElementById('user-display').innerText = `${phone}`;
       
-      // STRICT UNLOCK: Reveal Bottom Nav & Screens
+      // Unlock: Reveal Screens & Bottom Nav
       document.getElementById('auth-screen').classList.remove('active');
       document.getElementById('feed-screen').classList.add('active');
       const nav = document.getElementById('main-nav');
@@ -601,7 +599,6 @@
       loadSavedContacts();
     }
 
-    // Auto-login if session exists
     window.addEventListener('DOMContentLoaded', () => {
       const saved = localStorage.getItem('80knee_user');
       if (saved) {
@@ -628,15 +625,13 @@
     }
 
     // ==========================================
-    // 3. REAL NATIVE ANDROID CONTACT PICKER & SMS
+    // 3. REAL NATIVE CONTACT PICKER & SMS INVITES
     // ==========================================
     async function syncPhoneContacts() {
-      // Chrome Android Native Contact Picker API
       if ('contacts' in navigator && 'select' in navigator.contacts) {
         try {
           const props = ['name', 'tel'];
           const opts = { multiple: true };
-          // This opens the actual Android phone contacts app!
           const selectedContacts = await navigator.contacts.select(props, opts);
           if (selectedContacts && selectedContacts.length > 0) {
             processContacts(selectedContacts);
@@ -732,6 +727,7 @@
       const smsUrl = isIOS ? `sms:${clean}&body=${text}` : `sms:${clean}?body=${text}`;
       window.location.href = smsUrl;
     }
+
 
 // ==========================================
     // 4. WHATSAPP STYLE 1-ON-1 DIRECT MESSAGING
@@ -932,6 +928,7 @@
 
     // ==========================================
     // 6. VTU & PAYSTACK DIRECT BANK CHECKOUT
+    // (WITH YOUR REAL PAYSTACK KEY ALREADY CONFIGURED)
     // ==========================================
     function setVtuMode(mode) {
       vtuMode = mode;
@@ -974,7 +971,8 @@
     }
 
     function payWithPaystack(amount, label, phone) {
-      const PAYSTACK_PUBLIC_KEY = 'pk_test_cb2462e92ec4eb68705be2ffc5cf7b322a45a329';
+      // Configured with your real Paystack key
+      const PAYSTACK_PUBLIC_KEY = 'pk_test_ab64aabc8e8f5514a305cc37c89039f5ad54ac85';
       const userEmail = `${currentUserPhone.replace(/[^0-9]/g, '')}@80knee.com`;
 
       const handler = PaystackPop.setup({
