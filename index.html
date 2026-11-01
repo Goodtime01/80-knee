@@ -469,7 +469,6 @@
     </div>
   </div>
 
-
 <script>
     // ==========================================
     // 1. FIREBASE INITIALIZATION
@@ -499,6 +498,7 @@
     function cleanPhone(num) {
       if (!num) return '';
       let cleaned = num.trim().replace(/[\s\-\(\)]/g, '');
+      // Standardize Nigerian local format 080... to international +23480...
       if (cleaned.startsWith('0') && cleaned.length === 11) {
         cleaned = '+234' + cleaned.substring(1);
       }
@@ -524,7 +524,9 @@
         alert('Valid Google email required.');
         return;
       }
+
       const userDoc = await db.collection('users').where('email', '==', email.trim().toLowerCase()).get();
+
       if (!userDoc.empty) {
         const data = userDoc.docs[0].data();
         completeLogin(data.email, data.phone);
@@ -535,12 +537,14 @@
           alert('A valid phone number is required to use 80 knee.');
           return;
         }
+
         await db.collection('users').doc(phone).set({
           email: email.trim().toLowerCase(),
           phone: phone,
           authType: 'google',
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+
         completeLogin(email, phone);
       }
     }
@@ -548,10 +552,12 @@
     async function handleAuth() {
       const email = document.getElementById('auth-email').value.trim().toLowerCase();
       const pass = document.getElementById('auth-password').value.trim();
+
       if (!email || !email.includes('@') || !pass) {
         alert('Please enter a valid email address and password!');
         return;
       }
+
       if (isLoginMode) {
         const snapshot = await db.collection('users').where('email', '==', email).get();
         if (snapshot.empty || snapshot.docs[0].data().password !== pass) {
@@ -566,11 +572,13 @@
           alert('Please enter a valid phone number with country code!');
           return;
         }
+
         const existingPhone = await db.collection('users').doc(phone).get();
         if (existingPhone.exists) {
           alert('This phone number is already registered. Please log in.');
           return;
         }
+
         await db.collection('users').doc(phone).set({
           email: email,
           phone: phone,
@@ -578,6 +586,7 @@
           authType: 'email',
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+
         completeLogin(email, phone);
       }
     }
@@ -585,15 +594,21 @@
     function completeLogin(identifier, phone) {
       currentUser = identifier;
       currentUserPhone = phone;
+
       localStorage.setItem('80knee_user', JSON.stringify({ email: identifier, phone }));
+
       document.getElementById('user-display').innerText = `${phone}`;
+      
+      // STRICT UNLOCK: Reveal Bottom Nav & Screens
       document.getElementById('auth-screen').classList.remove('active');
       document.getElementById('feed-screen').classList.add('active');
       const nav = document.getElementById('main-nav');
       nav.style.setProperty('display', 'flex', 'important');
+
       loadSavedContacts();
     }
 
+    // Auto-login if session exists
     window.addEventListener('DOMContentLoaded', () => {
       const saved = localStorage.getItem('80knee_user');
       if (saved) {
@@ -623,10 +638,12 @@
     // 3. REAL NATIVE ANDROID CONTACT PICKER & SMS
     // ==========================================
     async function syncPhoneContacts() {
+      // Chrome Android Native Contact Picker API
       if ('contacts' in navigator && 'select' in navigator.contacts) {
         try {
           const props = ['name', 'tel'];
           const opts = { multiple: true };
+          // This opens the actual Android phone contacts app!
           const selectedContacts = await navigator.contacts.select(props, opts);
           if (selectedContacts && selectedContacts.length > 0) {
             processContacts(selectedContacts);
@@ -641,6 +658,7 @@
     }
 
     function manualAddContactFallback() {
+      // FIXED: Don't auto-show prompt. Ask user first.
       const choice = confirm("Your browser does not support direct phonebook access.\n\nPress OK to add ONE contact manually, or Cancel to import from your phonebook file instead.");
       if (!choice) {
         document.getElementById('vcf-input').click();
@@ -680,6 +698,7 @@
         }
       };
       reader.readAsText(file);
+      // Allow selecting same file again
       event.target.value = '';
     }
 
@@ -688,9 +707,11 @@
         const rawPhone = item.tel && item.tel[0] ? item.tel[0] : '';
         const phone = cleanPhone(rawPhone);
         const name = item.name && item.name[0] ? item.name[0] : phone;
+
         if (phone && phone !== currentUserPhone) {
           const userDoc = await db.collection('users').doc(phone).get();
           const hasApp = userDoc.exists;
+
           if (!mySyncedContacts.some(c => c.phone === phone)) {
             mySyncedContacts.push({
               name: name,
@@ -700,6 +721,7 @@
           }
         }
       }
+
       localStorage.setItem(`contacts_${currentUserPhone}`, JSON.stringify(mySyncedContacts));
       renderContacts();
       listenToContactFeed();
@@ -717,10 +739,12 @@
     function renderContacts() {
       const list = document.getElementById('contacts-list');
       list.innerHTML = '';
+
       if (mySyncedContacts.length === 0) {
         list.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No contacts synced yet. Tap "📲 Sync Contacts" above to load your phonebook!</p>';
         return;
       }
+
       mySyncedContacts.forEach(c => {
         const item = document.createElement('div');
         item.className = 'contact-item';
@@ -763,11 +787,14 @@
         alert("Security: You can only message users who are saved in your phone contacts.");
         return;
       }
+
       activeChatContact = { phone: recipientPhone, name: recipientName };
       document.getElementById('active-chat-name').innerText = `${recipientName} (${recipientPhone})`;
       document.getElementById('active-chat-avatar').innerText = recipientName.charAt(0).toUpperCase();
       document.getElementById('chat-view').style.display = 'flex';
+
       if (chatUnsubscribe) chatUnsubscribe();
+
       const chatId = [currentUserPhone, recipientPhone].sort().join('_');
       chatUnsubscribe = db.collection('chats').doc(chatId).collection('messages')
         .orderBy('timestamp', 'asc')
@@ -797,8 +824,10 @@
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
       if (!text || !activeChatContact) return;
+
       const chatId = [currentUserPhone, activeChatContact.phone].sort().join('_');
       input.value = '';
+
       await db.collection('chats').doc(chatId).collection('messages').add({
         sender: currentUser,
         senderPhone: currentUserPhone,
@@ -813,14 +842,18 @@
     // ==========================================
     function listenToContactFeed() {
       const allowedPhones = [currentUserPhone, ...mySyncedContacts.map(c => c.phone)];
+
       db.collection('posts')
         .orderBy('timestamp', 'desc')
         .onSnapshot(snapshot => {
           const container = document.getElementById('posts-container');
           container.innerHTML = '';
+
           let count = 0;
+
           snapshot.forEach(doc => {
             const post = { id: doc.id, ...doc.data() };
+
             if (allowedPhones.includes(post.authorPhone)) {
               count++;
               const isMine = post.authorPhone === currentUserPhone;
@@ -832,6 +865,7 @@
                   ${isMine ? `<span class="edit-btn" onclick="editPost('${post.id}', '${encodeURIComponent(post.content)}')">✏️ Edit</span>` : ''}
                 </div>
                 <p style="font-size: 14px; color: #cbd5e1; line-height: 1.4; margin-bottom: 10px;">${post.content}</p>
+                
                 <div class="post-actions">
                   <span onclick="toggleLike('${post.id}', ${post.likes || 0})">
                     ${(post.likedBy || []).includes(currentUserPhone) ? '❤️' : '🤍'} ${post.likes || 0}
@@ -843,6 +877,7 @@
                     🔗 Share
                   </span>
                 </div>
+
                 <div class="comments-box" id="comments-${post.id}">
                   <div style="font-size: 13px; color: #94a3b8; display:flex; flex-direction:column; gap:4px; margin-bottom:8px;">
                     ${(post.comments || []).map(c => `<div>• <b>${c.user}:</b> ${c.text}</div>`).join('')}
@@ -856,6 +891,7 @@
               container.appendChild(card);
             }
           });
+
           if (count === 0) {
             container.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No posts from your contacts yet. Tap "Sync Contacts" to see posts from your phonebook!</p>';
           }
@@ -866,6 +902,7 @@
       const input = document.getElementById('post-input');
       const text = input.value.trim();
       if (!text) return;
+
       await db.collection('posts').add({
         author: currentUser,
         authorPhone: currentUserPhone,
@@ -892,8 +929,10 @@
       const ref = db.collection('posts').doc(id);
       const doc = await ref.get();
       if (!doc.exists) return;
+      
       const likedBy = doc.data().likedBy || [];
       const isLiked = likedBy.includes(currentUserPhone);
+
       if (isLiked) {
         await ref.update({
           likes: Math.max(0, currentLikes - 1),
@@ -916,6 +955,7 @@
       const input = document.getElementById(`comment-input-${id}`);
       const val = input.value.trim();
       if (!val) return;
+
       await db.collection('posts').doc(id).update({
         comments: firebase.firestore.FieldValue.arrayUnion({
           user: currentUser,
@@ -936,7 +976,7 @@
     }
 
     // ==========================================
-    // 6. VTU & PAYSTACK DIRECT BANK CHECKOUT
+    // 6. VTU & PAYSTACK DIRECT BANK CHECKOUT - YOUR PAYSTACK CODE IS HERE
     // ==========================================
     function setVtuMode(mode) {
       vtuMode = mode;
@@ -958,8 +998,10 @@
         alert('Please enter a valid recipient phone number!');
         return;
       }
+
       let amount = 0;
       let label = '';
+
       if (vtuMode === 'airtime') {
         amount = parseFloat(document.getElementById('airtime-amount').value);
         if (!amount || amount < 50) {
@@ -972,12 +1014,14 @@
         amount = parseFloat(select.value);
         label = `${selectedNet} ${select.options[select.selectedIndex].text}`;
       }
+
       payWithPaystack(amount, label, phone);
     }
 
     function payWithPaystack(amount, label, phone) {
       const PAYSTACK_PUBLIC_KEY = 'pk_test_cb2462e92ec4eb68705be2ffc5cf7b322a45a329';
       const userEmail = `${currentUserPhone.replace(/[^0-9]/g, '')}@80knee.com`;
+
       const handler = PaystackPop.setup({
         key: PAYSTACK_PUBLIC_KEY,
         email: userEmail,
@@ -992,6 +1036,7 @@
           alert('Payment window closed. Transaction was cancelled.');
         }
       });
+
       handler.openIframe();
     }
   </script>
