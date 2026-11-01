@@ -1,14 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>80 knee</title>
+
+  <!-- 1. Paystack Official Payment SDK -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+
+  <!-- 2. Firebase Cloud Database SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+    }
+    body { 
+      background: #0f172a; 
+      color: white; 
+      display: flex; 
+      flex-direction: column; 
+      height: 100vh; 
+      overflow: hidden; 
+    }
+    
+    /* Top Bar */
+    .top-bar { 
+      background: #1e293b; 
+      padding: 12px 16px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      border-bottom: 1px solid #334155; 
+      z-index: 10;
+    }
+    .logo { 
+      font-size: 20px; 
+      font-weight: 800; 
+      color: #38bdf8; 
+      letter-spacing: 0.5px; 
+    }
+    .user-pill { 
+      background: #0f172a; 
+      border: 1px solid #334155; 
+      color: #38bdf8; 
+      padding: 5px 12px; 
+      border-radius: 20px; 
+      font-size: 12px; 
+      font-weight: 600; 
+    }
+
+    /* Screen Layouts */
+    .screen { 
+      flex: 1; 
+      overflow-y: auto; 
+      padding: 16px; 
+      display: none; 
+      flex-direction: column;
+      padding-bottom: 85px !important; 
+    }
+    .screen.active { 
+      display: flex; 
+    }
+
+    /* Auth Screen & Google Button */
+    #auth-screen { 
+      justify-content: center; 
+      align-items: center; 
+      text-align: center; 
+    }
+    .auth-card { 
+      background: #1e293b; 
+      padding: 24px; 
+      border-radius: 18px; 
+      width: 100%; 
+      max-width: 350px; 
+      border: 1px solid #334155; 
+    }
+    .google-btn { 
+      width: 100%; 
+      padding: 12px; 
+      background: white; 
+      color: #1f2937; 
+      font-weight: 700; 
+      font-size: 14px; 
+      border: none; 
+      border-radius: 10px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 10px; 
+      cursor: pointer; 
+      margin-bottom: 14px;
+    }
+    .divider { 
+      margin: 14px 0; 
+      display: flex; 
+      align-items: center; 
+      color: #64748b; 
+      font-size: 12px; 
+    }
+    .divider::before, .divider::after { 
+      content: ""; 
+      flex: 1; 
+      height: 1px; 
+      background: #334155; 
+    }
+    .divider span { 
+      padding: 0 8px; 
+    }
+
+    /* Inputs & Buttons */
+    .input-box { 
+      width: 100%; 
+      padding: 12px; 
+      background: #0f172a; 
+      border: 1px solid #334155; 
+      border-radius: 10px; 
+      color: white; 
+      font-size: 14px; 
+      margin-top: 6px; 
+      margin-bottom: 12px; 
+      outline: none; 
+    }
+    .btn { 
+      width: 100%; 
+      padding: 12px; 
+      background: #10b981; 
+      border: none; 
+      border-radius: 10px; 
+      color: white; 
+      font-size: 15px; 
+      font-weight: 700; 
+      cursor: pointer; 
+    }
+    .btn-blue { 
+      background: #0284c7; 
+    }
+
+/* Feed Post Cards */
+    .card { 
+      background: #1e293b; 
+      border-radius: 14px; 
+      padding: 14px; 
+      margin-bottom: 14px; 
+      border: 1px solid #334155; 
+    }
+    .post-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 8px; 
+    }
+    .post-actions { 
+      display: flex; 
+      gap: 16px; 
+      padding-top: 10px; 
+      border-top: 1px solid #334155; 
+      font-size: 13px; 
+      color: #94a3b8; 
+    }
+    .post-actions span { 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      gap: 4px; 
+    }
+    .edit-btn { 
+      color: #38bdf8; 
+      font-size: 12px; 
+      cursor: pointer; 
+      padding: 2px 6px; 
+      border-radius: 4px; 
+      background: rgba(56, 189, 248, 0.1); 
+    }
+    .comments-box { 
+      margin-top: 10px; 
+      padding-top: 10px; 
+      border-top: 1px dashed #334155; 
+      display: none; 
+    }
+
+    /* WhatsApp Style Chat & Contacts */
+    .contact-item { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between;
+      gap: 12px; 
+      padding: 12px; 
+      background: #1e293b; 
+      border-radius: 12px; 
+      margin-bottom: 8px; 
+      border: 1px solid #334155; 
+    }
+    .avatar { 
+      width: 44px; 
+      height: 44px; 
+      border-radius: 50%; 
+      background: #0284c7; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-weight: bold; 
+      font-size: 16px; 
+    }
+    .chat-view { 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      bottom: 0; 
+      background: #0f172a; 
+      z-index: 10000; 
+      display: none; 
+      flex-direction: column; 
+    }
+    .chat-header { 
+      background: #1e293b; 
+      padding: 12px 16px; 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      border-bottom: 1px solid #334155; 
+    }
+    .chat-body { 
+      flex: 1; 
+      overflow-y: auto; 
+      padding: 16px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 8px; 
+    }
+    .bubble { 
+      max-width: 80%; 
+      padding: 10px 14px; 
+      border-radius: 14px; 
+      font-size: 14px; 
+    }
+    .bubble.me { 
+      align-self: flex-end; 
+      background: #0284c7; 
+      border-bottom-right-radius: 2px; 
+    }
+    .bubble.them { 
+      align-self: flex-start; 
+      background: #1e293b; 
+      border-bottom-left-radius: 2px; 
+    }
+
+    /* VTU & Telecom */
+    .network-grid { 
+      display: grid; 
+      grid-template-columns: repeat(4, 1fr); 
+      gap: 8px; 
+      margin-bottom: 12px; 
+    }
+    .net-btn { 
+      padding: 9px 2px; 
+      background: #0f172a; 
+      border: 1px solid #334155; 
+      border-radius: 8px; 
+      color: #94a3b8; 
+      font-size: 11px; 
+      font-weight: 700; 
+      text-align: center; 
+      cursor: pointer; 
+    }
+    .net-btn.selected { 
+      border-color: #38bdf8; 
+      color: #38bdf8; 
+      background: rgba(56, 189, 248, 0.1); 
+    }
+    .vtu-toggle { 
+      display: flex; 
+      background: #0f172a; 
+      border-radius: 8px; 
+      padding: 3px; 
+      margin-bottom: 14px; 
+    }
+    .vtu-toggle div { 
+      flex: 1; 
+      text-align: center; 
+      padding: 8px; 
+      font-size: 13px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      border-radius: 6px; 
+      color: #94a3b8; 
+    }
+    .vtu-toggle div.active { 
+      background: #0284c7; 
+      color: white; 
+    }
+
+    /* Fixed Bottom Navigation Bar */
+    .nav-bar { 
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background: #1e293b; 
+      display: flex !important; 
+      justify-content: space-around; 
+      align-items: center;
+      border-top: 1px solid #334155; 
+      z-index: 9999;
+      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+    }
+    .nav-item { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      color: #94a3b8; 
+      font-size: 11px; 
+      cursor: pointer; 
+    }
+    .nav-item.active { 
+      color: #38bdf8; 
+      font-weight: 700; 
+    }
+    .nav-icon { 
+      font-size: 19px; 
+      margin-bottom: 2px; 
+    }
+  </style>
+</head>
+<body>
+
 <!-- Top App Bar -->
   <div class="top-bar">
     <div class="logo">80 knee</div>
     <div class="user-pill" id="user-display">🔒 Locked</div>
   </div>
 
-  <!-- Screen 0: Mandatory Sign Up & Login Gate -->
+  <!-- Screen 0: Mandatory Auth Screen (Strict Lockout) -->
   <div id="auth-screen" class="screen active">
     <div class="auth-card">
       <h2 style="color:#38bdf8; margin-bottom: 6px;" id="auth-title">Welcome to 80 knee</h2>
-      <p style="font-size:13px; color:#94a3b8; margin-bottom:16px;" id="auth-subtitle">Register your phone number to post, chat & buy airtime</p>
+      <p style="font-size:13px; color:#94a3b8; margin-bottom:16px;" id="auth-subtitle">Create an account to access feed, chat & airtime</p>
       
       <!-- Google Auth Button -->
       <button class="google-btn" onclick="signInWithGoogle()">
@@ -18,13 +352,15 @@
           <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
           <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
         </svg>
-        <span id="google-btn-text">Sign up with Google</span>
+        <span id="google-btn-text">Continue with Google</span>
       </button>
 
-      <div class="divider"><span>OR PHONE & PASSWORD</span></div>
+      <div class="divider"><span>OR WITH EMAIL & PASSWORD</span></div>
 
-      <input type="text" id="auth-username" class="input-box" placeholder="Your Name or Username (e.g. Etini)">
-      <input type="tel" id="auth-phone" class="input-box" placeholder="Phone Number (e.g. 08012345678)">
+      <input type="email" id="auth-email" class="input-box" placeholder="Email Address (e.g. name@gmail.com)">
+      <div id="phone-field-wrapper">
+        <input type="tel" id="auth-phone" class="input-box" placeholder="Phone Number (e.g. 08012345678)">
+      </div>
       <input type="password" id="auth-password" class="input-box" placeholder="Password">
 
       <button class="btn btn-blue" id="auth-submit-btn" onclick="handleAuth()">Sign Up & Continue</button>
@@ -64,7 +400,7 @@
       <div class="avatar" id="active-chat-avatar" style="width:36px; height:36px; font-size:14px;">?</div>
       <div>
         <div style="font-weight: bold; font-size: 15px;" id="active-chat-name">Contact</div>
-        <div style="font-size: 11px; color: #10b981;">Online (Encrypted 1-on-1)</div>
+        <div style="font-size: 11px; color: #10b981;">Online (1-on-1 Encrypted)</div>
       </div>
     </div>
     <div class="chat-body" id="chat-body"></div>
@@ -151,7 +487,6 @@
     let chatUnsubscribe = null;
     let mySyncedContacts = [];
 
-    // Clean and normalize Nigerian phone numbers
     function cleanPhone(num) {
       if (!num) return '';
       let cleaned = num.replace(/\D/g, '');
@@ -162,70 +497,98 @@
     }
 
     // ==========================================
-    // 2. STRICT LOGIN & REGISTRATION
+    // 2. STRICT AUTH GATE (EMAIL & GOOGLE)
     // ==========================================
     function toggleAuthMode() {
       isLoginMode = !isLoginMode;
       document.getElementById('auth-title').innerText = isLoginMode ? 'Welcome Back' : 'Welcome to 80 knee';
-      document.getElementById('auth-subtitle').innerText = isLoginMode ? 'Sign in with your phone number' : 'Register your phone number to post, chat & buy airtime';
-      document.getElementById('google-btn-text').innerText = isLoginMode ? 'Log in with Google' : 'Sign up with Google';
+      document.getElementById('auth-subtitle').innerText = isLoginMode ? 'Log in with your email and password' : 'Create an account to access 80 knee';
       document.getElementById('auth-submit-btn').innerText = isLoginMode ? 'Log In' : 'Sign Up & Continue';
       document.getElementById('auth-toggle-label').innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
       document.getElementById('auth-toggle-btn').innerText = isLoginMode ? 'Sign Up' : 'Log In';
+      document.getElementById('phone-field-wrapper').style.display = isLoginMode ? 'none' : 'block';
     }
 
     async function signInWithGoogle() {
-      let name = prompt('Google Account: Enter your full name:');
-      if (!name) return;
-      let phone = prompt('Enter your Nigerian phone number to link your Google account:');
-      phone = cleanPhone(phone);
-      if (!phone || phone.length < 10) {
-        alert('A valid phone number is required to use 80 knee.');
+      let email = prompt('Google Sign-In: Enter your Google email:');
+      if (!email || !email.includes('@')) {
+        alert('Valid Google email required.');
         return;
       }
-      completeLogin(name.trim(), phone);
+
+      const userDoc = await db.collection('users').where('email', '==', email.trim().toLowerCase()).get();
+
+      if (!userDoc.empty) {
+        const data = userDoc.docs[0].data();
+        completeLogin(data.email, data.phone);
+      } else {
+        let phone = prompt('Welcome! Enter your Nigerian phone number to link your Google account:');
+        phone = cleanPhone(phone);
+        if (!phone || phone.length < 10) {
+          alert('A valid phone number is required to use 80 knee.');
+          return;
+        }
+
+        await db.collection('users').doc(phone).set({
+          email: email.trim().toLowerCase(),
+          phone: phone,
+          authType: 'google',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        completeLogin(email, phone);
+      }
     }
 
     async function handleAuth() {
-      const username = document.getElementById('auth-username').value.trim();
-      const phone = cleanPhone(document.getElementById('auth-phone').value);
+      const email = document.getElementById('auth-email').value.trim().toLowerCase();
       const pass = document.getElementById('auth-password').value.trim();
 
-      if (!phone || phone.length < 10 || !pass) {
-        alert('Please enter a valid Nigerian phone number and password!');
+      if (!email || !email.includes('@') || !pass) {
+        alert('Please enter a valid email address and password!');
         return;
       }
-
-      if (!isLoginMode && !username) {
-        alert('Please enter your name or username!');
-        return;
-      }
-
-      const userDoc = await db.collection('users').doc(phone).get();
 
       if (isLoginMode) {
-        if (!userDoc.exists || userDoc.data().password !== pass) {
-          alert('Invalid phone number or password!');
+        const snapshot = await db.collection('users').where('email', '==', email).get();
+        if (snapshot.empty || snapshot.docs[0].data().password !== pass) {
+          alert('Invalid email or password!');
           return;
         }
-        completeLogin(userDoc.data().username, phone);
+        const user = snapshot.docs[0].data();
+        completeLogin(user.email, user.phone);
       } else {
+        const phone = cleanPhone(document.getElementById('auth-phone').value);
+        if (!phone || phone.length < 10) {
+          alert('Please enter a valid Nigerian phone number for your account!');
+          return;
+        }
+
+        const existingPhone = await db.collection('users').doc(phone).get();
+        if (existingPhone.exists) {
+          alert('This phone number is already registered. Please log in.');
+          return;
+        }
+
         await db.collection('users').doc(phone).set({
-          username: username,
+          email: email,
           phone: phone,
           password: pass,
+          authType: 'email',
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        completeLogin(username, phone);
+
+        completeLogin(email, phone);
       }
     }
 
-    function completeLogin(name, phone) {
-      currentUser = name;
+    function completeLogin(identifier, phone) {
+      currentUser = identifier;
       currentUserPhone = phone;
 
-      localStorage.setItem('80knee_user', JSON.stringify({ name, phone }));
-      document.getElementById('user-display').innerText = `@${name} (${phone})`;
+      localStorage.setItem('80knee_user', JSON.stringify({ email: identifier, phone }));
+
+      document.getElementById('user-display').innerText = `${phone}`;
       document.getElementById('auth-screen').classList.remove('active');
       document.getElementById('feed-screen').classList.add('active');
       document.getElementById('main-nav').style.display = 'flex';
@@ -233,12 +596,11 @@
       loadSavedContacts();
     }
 
-    // Auto-login if previously signed in
     window.addEventListener('DOMContentLoaded', () => {
       const saved = localStorage.getItem('80knee_user');
       if (saved) {
         const u = JSON.parse(saved);
-        completeLogin(u.name, u.phone);
+        completeLogin(u.email, u.phone);
       }
     });
 
@@ -250,7 +612,7 @@
     }
 
     // ==========================================
-    // 3. CONTACT PICKER & WHATSAPP-STYLE MATCHING
+    // 3. CONTACT PICKER & NATIVE SMS INVITES
     // ==========================================
     async function syncPhoneContacts() {
       if ('contacts' in navigator && 'ContactsManager' in window) {
@@ -288,8 +650,7 @@
             mySyncedContacts.push({
               name: name,
               phone: phone,
-              hasApp: hasApp,
-              username: hasApp ? userDoc.data().username : null
+              hasApp: hasApp
             });
           }
         }
@@ -332,7 +693,7 @@
           <div>
             ${c.hasApp 
               ? `<button class="btn btn-blue" style="padding:6px 14px; font-size:12px; width:auto;" onclick="openChat('${c.phone}', '${c.name}')">Message (DM)</button>` 
-              : `<button class="btn" style="padding:6px 14px; font-size:12px; width:auto; background:#10b981;" onclick="inviteContact('${c.phone}', '${c.name}')">Invite</button>`
+              : `<button class="btn" style="padding:6px 14px; font-size:12px; width:auto; background:#10b981;" onclick="inviteContact('${c.phone}', '${c.name}')">Invite (SMS)</button>`
             }
           </div>
         `;
@@ -341,8 +702,11 @@
     }
 
     function inviteContact(phone, name) {
-      const text = encodeURIComponent(`Hello ${name}, join me on 80 knee to chat, post, and recharge airtime/data: https://goodtime01.github.io/80knee/`);
-      window.open(`https://wa.me/234${phone.substring(1)}?text=${text}`, '_blank');
+      const text = encodeURIComponent(
+        `Hello ${name}, join me on 80 knee to chat, post, and buy airtime/data: https://goodtime01.github.io/80knee/`
+      );
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      window.location.href = isIOS ? `sms:${phone}&body=${text}` : `sms:${phone}?body=${text}`;
     }
 
     function openChat(recipientPhone, recipientName) {
@@ -401,229 +765,6 @@
       });
     }
 
-// ==========================================
-    // 4. CONTACT-ONLY FEED & POST EDITING
-    // ==========================================
-    function listenToContactFeed() {
-      const allowedPhones = [currentUserPhone, ...mySyncedContacts.map(c => c.phone)];
-
-      db.collection('posts')
-        .orderBy('timestamp', 'desc')
-        .onSnapshot(snapshot => {
-          const container = document.getElementById('posts-container');
-          container.innerHTML = '';
-
-          let count = 0;
-
-          snapshot.forEach(doc => {
-            const post = { id: doc.id, ...doc.data() };
-
-            if (allowedPhones.includes(post.authorPhone)) {
-              count++;
-              const isMine = post.authorPhone === currentUserPhone;
-              const card = document.createElement('div');
-              card.className = 'card';
-              card.innerHTML = `
-                <div class="post-header">
-                  <h4 style="color:#38bdf8;">@${post.author} <span style="font-size:11px; color:#64748b;">(${post.authorPhone})</span></h4>
-                  ${isMine ? `<span class="edit-btn" onclick="editPost('${post.id}', '${encodeURIComponent(post.content)}')">✏️ Edit</span>` : ''}
-                </div>
-                <p style="font-size: 14px; color: #cbd5e1; line-height: 1.4; margin-bottom: 10px;">${post.content}</p>
-                
-                <div class="post-actions">
-                  <span onclick="toggleLike('${post.id}', ${post.likes || 0})">
-                    ${(post.likedBy || []).includes(currentUserPhone) ? '❤️' : '🤍'} ${post.likes || 0}
-                  </span>
-                  <span onclick="toggleComments('${post.id}')">
-                    💬 ${(post.comments || []).length} Comments
-                  </span>
-                  <span onclick="sharePost('${encodeURIComponent(post.content)}', '${post.author}')">
-                    🔗 Share
-                  </span>
-                </div>
-
-                <div class="comments-box" id="comments-${post.id}">
-                  <div style="font-size: 13px; color: #94a3b8; display:flex; flex-direction:column; gap:4px; margin-bottom:8px;">
-                    ${(post.comments || []).map(c => `<div>• <b>${c.user}:</b> ${c.text}</div>`).join('')}
-                  </div>
-                  <div style="display:flex; gap:6px;">
-                    <input type="text" id="comment-input-${post.id}" class="input-box" style="margin:0; padding:8px 10px; font-size:12px;" placeholder="Write a comment...">
-                    <button class="btn btn-blue" style="width:auto; padding:0 12px; font-size:12px;" onclick="addComment('${post.id}')">Reply</button>
-                  </div>
-                </div>
-              `;
-              container.appendChild(card);
-            }
-          });
-
-          if (count === 0) {
-            container.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No posts from your contacts yet. Sync more contacts or share a post!</p>';
-          }
-        });
-    }
-
-    async function createPost() {
-      const input = document.getElementById('post-input');
-      const text = input.value.trim();
-      if (!text) return;
-
-      await db.collection('posts').add({
-        author: currentUser,
-        authorPhone: currentUserPhone,
-        content: text,
-        likes: 0,
-        likedBy: [],
-        comments: [],
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      input.value = '';
-    }
-
-    async function editPost(id, oldTextEncoded) {
-      const oldText = decodeURIComponent(oldTextEncoded);
-      const newText = prompt('Edit your post:', oldText);
-      if (newText !== null && newText.trim() !== '') {
-        await db.collection('posts').doc(id).update({
-          content: newText.trim()
-        });
-      }
-    }
-
-    async function toggleLike(id, currentLikes) {
-      const ref = db.collection('posts').doc(id);
-      const doc = await ref.get();
-      if (!doc.exists) return;
-      
-      const likedBy = doc.data().likedBy || [];
-      const isLiked = likedBy.includes(currentUserPhone);
-
-      if (isLiked) {
-        await ref.update({
-          likes: Math.max(0, currentLikes - 1),
-          likedBy: firebase.firestore.FieldValue.arrayRemove(currentUserPhone)
-        });
-      } else {
-        await ref.update({
-          likes: currentLikes + 1,
-          likedBy: firebase.firestore.FieldValue.arrayUnion(currentUserPhone)
-        });
-      }
-    }
-
-    function toggleComments(id) {
-      const box = document.getElementById(`comments-${id}`);
-      box.style.display = box.style.display === 'block' ? 'none' : 'block';
-    }
-
-    async function addComment(id) {
-      const input = document.getElementById(`comment-input-${id}`);
-      const val = input.value.trim();
-      if (!val) return;
-
-      await db.collection('posts').doc(id).update({
-        comments: firebase.firestore.FieldValue.arrayUnion({
-          user: currentUser,
-          text: val
-        })
-      });
-      input.value = '';
-    }
-
-    function sharePost(contentEncoded, author) {
-      const text = `"${decodeURIComponent(contentEncoded)}" — @${author} on 80 knee`;
-      if (navigator.share) {
-        navigator.share({ title: '80 knee', text: text, url: window.location.href });
-      } else {
-        navigator.clipboard.writeText(text);
-        alert('Post link copied to clipboard!');
-      }
-    }
-
-    // ==========================================
-    // 5. VTU & PAYSTACK DIRECT BANK CHECKOUT
-    // ==========================================
-    function setVtuMode(mode) {
-      vtuMode = mode;
-      document.getElementById('toggle-airtime').className = mode === 'airtime' ? 'active' : '';
-      document.getElementById('toggle-data').className = mode === 'data' ? 'active' : '';
-      document.getElementById('airtime-section').style.display = mode === 'airtime' ? 'block' : 'none';
-      document.getElementById('data-section').style.display = mode === 'data' ? 'block' : 'none';
-    }
-
-    function pickNet(btn) {
-      document.querySelectorAll('.net-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      selectedNet = btn.innerText;
-    }
-
-    function openBankCheckout() {
-      const phone = cleanPhone(document.getElementById('vtu-phone').value);
-      if (!phone || phone.length < 10) {
-        alert('Please enter a valid recipient phone number!');
-        return;
-      }
-
-      let amount = 0;
-      let label = '';
-
-      if (vtuMode === 'airtime') {
-        amount = parseFloat(document.getElementById('airtime-amount').value);
-        if (!amount || amount < 50) {
-          alert('Minimum airtime amount is ₦50');
-          return;
-        }
-        label = `₦${amount} ${selectedNet} Airtime`;
-      } else {
-        const select = document.getElementById('data-plan-select');
-        amount = parseFloat(select.value);
-        label = `${selectedNet} ${select.options[select.selectedIndex].text}`;
-      }
-
-      payWithPaystack(amount, label, phone);
-    }
-
-    function payWithPaystack(amount, label, phone) {
-      const PAYSTACK_PUBLIC_KEY = 'pk_test_cb2462e92ec4eb68705be2ffc5cf7b322a45a329';
-      const userEmail = `${currentUserPhone}@80knee.com`;
-
-      const handler = PaystackPop.setup({
-        key: PAYSTACK_PUBLIC_KEY,
-        email: userEmail,
-        amount: amount * 100,
-        currency: 'NGN',
-        ref: '80KNEE_' + Math.floor((Math.random() * 1000000000) + 1),
-        channels: ['bank_transfer', 'card', 'ussd', 'bank'],
-        callback: function(response) {
-          alert(`🎉 Payment Successful!\n\nReference: ${response.reference}\n\nYour ${label} for ${phone} is now being processed.`);
-        },
-        onClose: function() {
-          alert('Payment window closed. Transaction was cancelled.');
-        }
-      });
-
-      handler.openIframe();
-    }
-  </script>
-</body>
-</html>
-
-// ==========================================
-    // INVITE CONTACT VIA NATIVE SMS
-    // ==========================================
-    function inviteContact(phone, name) {
-      const text = encodeURIComponent(
-        `Hello ${name}, join me on 80 knee to chat, post, and recharge airtime/data: https://goodtime01.github.io/80knee/`
-      );
-
-      // Detect iOS vs Android to format SMS URL properly
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const smsUrl = isIOS 
-        ? `sms:${phone}&body=${text}` 
-        : `sms:${phone}?body=${text}`;
-
-      // Opens phone's default text messaging app (Google Messages, Samsung Messages, etc.)
-      window.location.href = smsUrl;
-    }
 // ==========================================
     // 4. CONTACT-ONLY FEED & POST EDITING
     // ==========================================
