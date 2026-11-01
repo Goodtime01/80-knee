@@ -791,6 +791,15 @@
       selectedNet = btn.innerText;
     }
 
+    
+
+
+
+
+
+// ==========================================
+    // REAL PAYSTACK BANK & CARD PAYMENT GATEWAY
+    // ==========================================
     function openBankCheckout() {
       const phone = document.getElementById('vtu-phone').value.trim();
       if (!phone || phone.length < 10) {
@@ -814,20 +823,39 @@
         label = `${selectedNet} ${select.options[select.selectedIndex].text}`;
       }
 
-      pendingPurchase = { amount, label, phone };
-      document.getElementById('modal-amount').innerText = `₦${amount.toLocaleString()}`;
-      document.getElementById('bank-modal').style.display = 'flex';
+      payWithPaystack(amount, label, phone);
     }
 
-    function closeBankCheckout() {
-      document.getElementById('bank-modal').style.display = 'none';
+    function payWithPaystack(amount, label, phone) {
+      // Paste your pk_test_ or pk_live_ key from Paystack here
+      // For now, this demo public key allows you to test the checkout immediately
+      const PAYSTACK_PUBLIC_KEY = 'pk_test_cb2462e92ec4eb68705be2ffc5cf7b322a45a329';
+
+      const userEmail = currentUser && currentUser.includes('@') 
+        ? currentUser 
+        : `${(currentUser || 'user').toLowerCase().replace(/\s+/g, '')}@80knee.com`;
+
+      const handler = PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: userEmail,
+        amount: amount * 100, // Paystack charges in kobo (e.g. ₦500 = 50000 kobo)
+        currency: 'NGN',
+        ref: '80KNEE_' + Math.floor((Math.random() * 1000000000) + 1),
+        channels: ['bank_transfer', 'card', 'ussd', 'bank'],
+        callback: function(response) {
+          // Triggered when payment is confirmed by the bank
+          alert(`🎉 Payment Successful!\n\nReference: ${response.reference}\n\nYour ${label} for ${phone} is now being processed.`);
+        },
+        onClose: function() {
+          alert('Payment window closed. Transaction was cancelled.');
+        }
+      });
+
+      handler.openIframe();
     }
 
-    function completeBankPayment() {
-      const bank = document.getElementById('bank-select').value;
-      closeBankCheckout();
-      alert(`✅ Payment of ₦${pendingPurchase.amount} Authorized via ${bank}!\n\nYour ${pendingPurchase.label} has been delivered to ${pendingPurchase.phone}.`);
-    }
+
+
   </script>
 </body>
 </html>
