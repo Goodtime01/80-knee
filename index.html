@@ -332,7 +332,6 @@
 </head>
 <body>
 
-
 <!-- Top App Bar -->
   <div class="top-bar">
     <div class="logo">80 knee</div>
@@ -777,7 +776,6 @@
       window.location.href = smsUrl;
     }
 
-
     // ==========================================
     // 4. WHATSAPP STYLE 1-ON-1 DIRECT MESSAGING
     // ==========================================
@@ -976,7 +974,7 @@
     }
 
     // ==========================================
-    // 6. VTU & PAYSTACK DIRECT BANK CHECKOUT - YOUR PAYSTACK CODE IS HERE
+    // 6. VTU & PAYSTACK DIRECT BANK CHECKOUT - YOUR NEW KEY IS HERE
     // ==========================================
     function setVtuMode(mode) {
       vtuMode = mode;
@@ -1019,7 +1017,7 @@
     }
 
     function payWithPaystack(amount, label, phone) {
-      const PAYSTACK_PUBLIC_KEY = 'pk_test_cb2462e92ec4eb68705be2ffc5cf7b322a45a329';
+      const PAYSTACK_PUBLIC_KEY = 'pk_test_ab64aabc8e8f5514a305cc37c89039f5ad54ac85';
       const userEmail = `${currentUserPhone.replace(/[^0-9]/g, '')}@80knee.com`;
 
       const handler = PaystackPop.setup({
