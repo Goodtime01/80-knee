@@ -67,7 +67,7 @@
       display: flex; 
     }
 
-    /* Auth Screen & Google Button */
+    /* Strict Auth Screen */
     #auth-screen { 
       justify-content: center; 
       align-items: center; 
@@ -305,7 +305,7 @@
       right: 0;
       height: 65px;
       background: #1e293b; 
-      display: flex !important; 
+      display: flex; 
       justify-content: space-around; 
       align-items: center;
       border-top: 1px solid #334155; 
@@ -335,14 +335,14 @@
 <!-- Top App Bar -->
   <div class="top-bar">
     <div class="logo">80 knee</div>
-    <div class="user-pill" id="user-display">🔒 Locked</div>
+    <div class="user-pill" id="user-display">🔒 Sign In Required</div>
   </div>
 
-  <!-- Screen 0: Mandatory Auth Screen (Strict Lockout) -->
+  <!-- Screen 0: Mandatory Global Auth Lockout -->
   <div id="auth-screen" class="screen active">
     <div class="auth-card">
       <h2 style="color:#38bdf8; margin-bottom: 6px;" id="auth-title">Welcome to 80 knee</h2>
-      <p style="font-size:13px; color:#94a3b8; margin-bottom:16px;" id="auth-subtitle">Create an account to access feed, chat & airtime</p>
+      <p style="font-size:13px; color:#94a3b8; margin-bottom:16px;" id="auth-subtitle">Sign in or create an account to access 80 knee</p>
       
       <!-- Google Auth Button -->
       <button class="google-btn" onclick="signInWithGoogle()">
@@ -359,7 +359,7 @@
 
       <input type="email" id="auth-email" class="input-box" placeholder="Email Address (e.g. name@gmail.com)">
       <div id="phone-field-wrapper">
-        <input type="tel" id="auth-phone" class="input-box" placeholder="Phone Number (e.g. 08012345678)">
+        <input type="tel" id="auth-phone" class="input-box" placeholder="Phone Number with country code (e.g. +234...)">
       </div>
       <input type="password" id="auth-password" class="input-box" placeholder="Password">
 
@@ -400,7 +400,7 @@
       <div class="avatar" id="active-chat-avatar" style="width:36px; height:36px; font-size:14px;">?</div>
       <div>
         <div style="font-weight: bold; font-size: 15px;" id="active-chat-name">Contact</div>
-        <div style="font-size: 11px; color: #10b981;">Online (1-on-1 Encrypted)</div>
+        <div style="font-size: 11px; color: #10b981;">Online (1-on-1 Direct Message)</div>
       </div>
     </div>
     <div class="chat-body" id="chat-body"></div>
@@ -447,7 +447,7 @@
   </div>
 
   <!-- Bottom Navigation Bar (Hidden until login) -->
-  <div class="nav-bar" id="main-nav" style="display:none;">
+  <div class="nav-bar" id="main-nav" style="display:none !important;">
     <div class="nav-item active" onclick="switchTab('feed-screen', this)">
       <div class="nav-icon">📰</div>
       <span>Feed</span>
@@ -461,7 +461,6 @@
       <span>Airtime/Data</span>
     </div>
   </div>
-
 <script>
     // ==========================================
     // 1. FIREBASE INITIALIZATION
@@ -487,17 +486,19 @@
     let chatUnsubscribe = null;
     let mySyncedContacts = [];
 
+    // Global Phone Normalization (Supports any country)
     function cleanPhone(num) {
       if (!num) return '';
-      let cleaned = num.replace(/\D/g, '');
-      if (cleaned.startsWith('234')) {
-        cleaned = '0' + cleaned.substring(3);
+      let cleaned = num.trim().replace(/[\s\-\(\)]/g, '');
+      // Standardize Nigerian local format 080... to international +23480...
+      if (cleaned.startsWith('0') && cleaned.length === 11) {
+        cleaned = '+234' + cleaned.substring(1);
       }
       return cleaned;
     }
 
     // ==========================================
-    // 2. STRICT AUTH GATE (EMAIL & GOOGLE)
+    // 2. STRICT GLOBAL AUTHENTICATION GATE
     // ==========================================
     function toggleAuthMode() {
       isLoginMode = !isLoginMode;
@@ -522,9 +523,9 @@
         const data = userDoc.docs[0].data();
         completeLogin(data.email, data.phone);
       } else {
-        let phone = prompt('Welcome! Enter your Nigerian phone number to link your Google account:');
+        let phone = prompt('Enter your mobile phone number with country code (e.g. +234... or local):');
         phone = cleanPhone(phone);
-        if (!phone || phone.length < 10) {
+        if (!phone || phone.length < 8) {
           alert('A valid phone number is required to use 80 knee.');
           return;
         }
@@ -559,8 +560,8 @@
         completeLogin(user.email, user.phone);
       } else {
         const phone = cleanPhone(document.getElementById('auth-phone').value);
-        if (!phone || phone.length < 10) {
-          alert('Please enter a valid Nigerian phone number for your account!');
+        if (!phone || phone.length < 8) {
+          alert('Please enter a valid phone number with country code!');
           return;
         }
 
@@ -589,22 +590,36 @@
       localStorage.setItem('80knee_user', JSON.stringify({ email: identifier, phone }));
 
       document.getElementById('user-display').innerText = `${phone}`;
+      
+      // STRICT UNLOCK: Reveal Bottom Nav & Screens
       document.getElementById('auth-screen').classList.remove('active');
       document.getElementById('feed-screen').classList.add('active');
-      document.getElementById('main-nav').style.display = 'flex';
+      const nav = document.getElementById('main-nav');
+      nav.style.setProperty('display', 'flex', 'important');
 
       loadSavedContacts();
     }
 
+    // Auto-login if session exists
     window.addEventListener('DOMContentLoaded', () => {
       const saved = localStorage.getItem('80knee_user');
       if (saved) {
-        const u = JSON.parse(saved);
-        completeLogin(u.email, u.phone);
+        try {
+          const u = JSON.parse(saved);
+          if (u.email && u.phone) {
+            completeLogin(u.email, u.phone);
+          }
+        } catch (e) {
+          localStorage.removeItem('80knee_user');
+        }
       }
     });
 
     function switchTab(screenId, element) {
+      if (!currentUserPhone) {
+        alert('Please sign in or register first!');
+        return;
+      }
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
@@ -612,15 +627,21 @@
     }
 
     // ==========================================
-    // 3. CONTACT PICKER & NATIVE SMS INVITES
+    // 3. REAL NATIVE ANDROID CONTACT PICKER & SMS
     // ==========================================
     async function syncPhoneContacts() {
-      if ('contacts' in navigator && 'ContactsManager' in window) {
+      // Chrome Android Native Contact Picker API
+      if ('contacts' in navigator && 'select' in navigator.contacts) {
         try {
           const props = ['name', 'tel'];
-          const contacts = await navigator.contacts.select(props, { multiple: true });
-          processContacts(contacts);
-        } catch (e) {
+          const opts = { multiple: true };
+          // This opens the actual Android phone contacts app!
+          const selectedContacts = await navigator.contacts.select(props, opts);
+          if (selectedContacts && selectedContacts.length > 0) {
+            processContacts(selectedContacts);
+          }
+        } catch (err) {
+          console.warn('Contact picker error / cancelled:', err);
           manualAddContactFallback();
         }
       } else {
@@ -630,7 +651,7 @@
 
     function manualAddContactFallback() {
       const name = prompt("Enter contact's name:");
-      const phone = prompt("Enter contact's phone number (e.g. 08012345678):");
+      const phone = prompt("Enter contact's phone number (with country code):");
       if (name && phone) {
         processContacts([{ name: [name], tel: [phone] }]);
       }
@@ -675,7 +696,7 @@
       list.innerHTML = '';
 
       if (mySyncedContacts.length === 0) {
-        list.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No contacts synced yet. Tap "📲 Sync Contacts" above!</p>';
+        list.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No contacts synced yet. Tap "📲 Sync Contacts" above to load your phonebook!</p>';
         return;
       }
 
@@ -703,12 +724,17 @@
 
     function inviteContact(phone, name) {
       const text = encodeURIComponent(
-        `Hello ${name}, join me on 80 knee to chat, post, and buy airtime/data: https://goodtime01.github.io/80knee/`
+        `Hello ${name}, join me on 80 knee to chat, post, and recharge airtime/data: https://goodtime01.github.io/80knee/`
       );
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      window.location.href = isIOS ? `sms:${phone}&body=${text}` : `sms:${phone}?body=${text}`;
+      const clean = phone.replace(/[^0-9+]/g, '');
+      const smsUrl = isIOS ? `sms:${clean}&body=${text}` : `sms:${clean}?body=${text}`;
+      window.location.href = smsUrl;
     }
 
+// ==========================================
+    // 4. WHATSAPP STYLE 1-ON-1 DIRECT MESSAGING
+    // ==========================================
     function openChat(recipientPhone, recipientName) {
       const isContact = mySyncedContacts.some(c => c.phone === recipientPhone);
       if (!isContact) {
@@ -765,8 +791,8 @@
       });
     }
 
-// ==========================================
-    // 4. CONTACT-ONLY FEED & POST EDITING
+    // ==========================================
+    // 5. CONTACT-ONLY FEED & POST EDITING
     // ==========================================
     function listenToContactFeed() {
       const allowedPhones = [currentUserPhone, ...mySyncedContacts.map(c => c.phone)];
@@ -821,7 +847,7 @@
           });
 
           if (count === 0) {
-            container.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No posts from your contacts yet. Sync more contacts or share a post!</p>';
+            container.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No posts from your contacts yet. Tap "Sync Contacts" to see posts from your phonebook!</p>';
           }
         });
     }
@@ -904,7 +930,7 @@
     }
 
     // ==========================================
-    // 5. VTU & PAYSTACK DIRECT BANK CHECKOUT
+    // 6. VTU & PAYSTACK DIRECT BANK CHECKOUT
     // ==========================================
     function setVtuMode(mode) {
       vtuMode = mode;
@@ -922,7 +948,7 @@
 
     function openBankCheckout() {
       const phone = cleanPhone(document.getElementById('vtu-phone').value);
-      if (!phone || phone.length < 10) {
+      if (!phone || phone.length < 8) {
         alert('Please enter a valid recipient phone number!');
         return;
       }
@@ -948,7 +974,7 @@
 
     function payWithPaystack(amount, label, phone) {
       const PAYSTACK_PUBLIC_KEY = 'pk_test_cb2462e92ec4eb68705be2ffc5cf7b322a45a329';
-      const userEmail = `${currentUserPhone}@80knee.com`;
+      const userEmail = `${currentUserPhone.replace(/[^0-9]/g, '')}@80knee.com`;
 
       const handler = PaystackPop.setup({
         key: PAYSTACK_PUBLIC_KEY,
