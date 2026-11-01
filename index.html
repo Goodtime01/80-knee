@@ -142,7 +142,7 @@
       background: #0284c7; 
     }
 
-    /* Feed Post Cards */
+/* Feed Post Cards */
     .card { 
       background: #1e293b; 
       border-radius: 14px; 
@@ -384,17 +384,11 @@
 
   <!-- Screen 2: WhatsApp Style Contacts & Chats -->
   <div id="chat-screen" class="screen">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px; flex-wrap:wrap;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <h3 style="font-size: 15px; color: #94a3b8;">Phone Contacts</h3>
-      <div style="display:flex; gap:8px;">
-        <button class="btn btn-blue" style="width:auto; padding:6px 14px; font-size:12px;" onclick="syncPhoneContacts()">
-          📲 Sync Contacts
-        </button>
-        <input type="file" id="vcf-input" accept=".vcf,.csv" style="display:none" onchange="importVCF(event)">
-        <button class="btn" style="width:auto; padding:6px 14px; font-size:12px; background:#334155;" onclick="document.getElementById('vcf-input').click()">
-          📁 Import .vcf
-        </button>
-      </div>
+      <button class="btn btn-blue" style="width:auto; padding:6px 14px; font-size:12px;" onclick="syncPhoneContacts()">
+        📲 Sync Contacts
+      </button>
     </div>
     <div id="contacts-list"></div>
   </div>
@@ -657,48 +651,11 @@
     }
 
     function manualAddContactFallback() {
-      // FIXED: Don't auto-show prompt. Ask user first.
-      const choice = confirm("Your browser does not support direct phonebook access.\n\nPress OK to add ONE contact manually, or Cancel to import from your phonebook file instead.");
-      if (!choice) {
-        document.getElementById('vcf-input').click();
-        return;
-      }
       const name = prompt("Enter contact's name:");
       const phone = prompt("Enter contact's phone number (with country code):");
       if (name && phone) {
         processContacts([{ name: [name], tel: [phone] }]);
       }
-    }
-
-    // NEW: Import contacts from .vcf file - works on ALL phones including iPhone
-    function importVCF(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const text = e.target.result;
-        const cards = text.split('BEGIN:VCARD');
-        const parsed = [];
-        cards.forEach(card => {
-          const nameMatch = card.match(/FN:(.*)/);
-          const telMatch = card.match(/TEL[^:]*:(.*)/);
-          if (nameMatch || telMatch) {
-            parsed.push({
-              name: [nameMatch ? nameMatch[1].trim() : 'No Name'],
-              tel: [telMatch ? telMatch[1].trim() : '']
-            });
-          }
-        });
-        if (parsed.length > 0) {
-          processContacts(parsed);
-          alert(parsed.length + " contacts imported!");
-        } else {
-          alert("No contacts found in that file");
-        }
-      };
-      reader.readAsText(file);
-      // Allow selecting same file again
-      event.target.value = '';
     }
 
     async function processContacts(rawList) {
@@ -776,7 +733,7 @@
       window.location.href = smsUrl;
     }
 
-    // ==========================================
+// ==========================================
     // 4. WHATSAPP STYLE 1-ON-1 DIRECT MESSAGING
     // ==========================================
     function openChat(recipientPhone, recipientName) {
@@ -974,7 +931,7 @@
     }
 
     // ==========================================
-    // 6. VTU & PAYSTACK DIRECT BANK CHECKOUT - YOUR NEW KEY IS HERE
+    // 6. VTU & PAYSTACK DIRECT BANK CHECKOUT
     // ==========================================
     function setVtuMode(mode) {
       vtuMode = mode;
@@ -1017,7 +974,7 @@
     }
 
     function payWithPaystack(amount, label, phone) {
-      const PAYSTACK_PUBLIC_KEY = 'pk_test_ab64aabc8e8f5514a305cc37c89039f5ad54ac85';
+      const PAYSTACK_PUBLIC_KEY = 'pk_test_cb2462e92ec4eb68705be2ffc5cf7b322a45a329';
       const userEmail = `${currentUserPhone.replace(/[^0-9]/g, '')}@80knee.com`;
 
       const handler = PaystackPop.setup({
