@@ -539,7 +539,8 @@
       }
     }
 
-    async function handleAuth() {
+async function handleAuth() {
+  try {
       const email = document.getElementById('auth-email').value.trim().toLowerCase();
       const pass = document.getElementById('auth-password').value.trim();
 
