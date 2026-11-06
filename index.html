@@ -8,6 +8,7 @@
   <!-- Paystack & Firebase Cloud SDKs -->
   <script src="https://js.paystack.co/v1/inline.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <style>
@@ -475,6 +476,7 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const auth = firebase.auth();
 
     let currentUser = null;
     let currentUserPhone = null;
@@ -508,33 +510,27 @@
       document.getElementById('phone-field-wrapper').style.display = isLoginMode ? 'none' : 'block';
     }
 
-    // *** FIXED AREA STARTS HERE ***
     async function signInWithGoogle() {
       try {
-        let email = prompt('Google Sign-In: Enter your Google email:');
-        if (!email || !email.includes('@')) {
-          alert('Valid Google email required.');
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const res = await auth.signInWithPopup(provider);
+        const email = res.user.email.toLowerCase();
+        let phone = prompt('Enter your phone number with country code (e.g. +234... or local):');
+        phone = cleanPhone(phone);
+        if (!phone || phone.length < 8) {
+          alert('A valid phone number is required to use 80 knee.');
           return;
         }
-        const userDoc = await db.collection('users').where('email', '==', email.trim().toLowerCase()).get();
-        if (!userDoc.empty) {
-          const data = userDoc.docs[0].data();
-          completeLogin(data.email, data.phone);
-        } else {
-          let phone = prompt('Enter your phone number with country code (e.g. +234... or local):');
-          phone = cleanPhone(phone);
-          if (!phone || phone.length < 8) {
-            alert('A valid phone number is required to use 80 knee.');
-            return;
-          }
+        const doc = await db.collection('users').doc(phone).get();
+        if (!doc.exists) {
           await db.collection('users').doc(phone).set({
-            email: email.trim().toLowerCase(),
+            email: email,
             phone: phone,
             authType: 'google',
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-          completeLogin(email.trim().toLowerCase(), phone);
         }
+        completeLogin(email, phone);
       } catch(e) {
         alert('Login error: ' + e.message);
       }
@@ -549,9 +545,10 @@
           return;
         }
         if (isLoginMode) {
+          await auth.signInWithEmailAndPassword(email, pass);
           const snapshot = await db.collection('users').where('email', '==', email).get();
-          if (snapshot.empty || snapshot.docs[0].data().password !== pass) {
-            alert('Invalid email or password!');
+          if (snapshot.empty) {
+            alert('No profile found for this email! Please sign up first.');
             return;
           }
           const user = snapshot.docs[0].data();
@@ -567,10 +564,10 @@
             alert('This phone number is already registered. Please log in.');
             return;
           }
+          await auth.createUserWithEmailAndPassword(email, pass);
           await db.collection('users').doc(phone).set({
             email: email,
             phone: phone,
-            password: pass,
             authType: 'email',
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
@@ -580,7 +577,6 @@
         alert('Error: ' + e.message);
       }
     }
-    // *** FIXED AREA ENDS HERE ***
 
     function completeLogin(identifier, phone) {
       currentUser = identifier;
@@ -619,7 +615,7 @@
       element.classList.add('active');
     }
 
-      // ==========================================
+    // ==========================================
     // 3. REAL NATIVE CONTACT PICKER & SMS INVITES
     // ==========================================
     async function syncPhoneContacts() {
@@ -655,8 +651,13 @@
         const name = item.name && item.name[0] ? item.name[0] : phone;
 
         if (phone && phone !== currentUserPhone) {
-          const userDoc = await db.collection('users').doc(phone).get();
-          const hasApp = userDoc.exists;
+          let hasApp = false;
+          try {
+            const userDoc = await db.collection('users').doc(phone).get();
+            hasApp = userDoc.exists;
+          } catch(e) {
+            hasApp = false;
+          }
 
           if (!mySyncedContacts.some(c => c.phone === phone)) {
             mySyncedContacts.push({
@@ -723,7 +724,7 @@
       window.location.href = smsUrl;
     }
 
-// ==========================================
+    // ==========================================
     // 4. WHATSAPP STYLE 1-ON-1 DIRECT MESSAGING
     // ==========================================
     function openChat(recipientPhone, recipientName) {
@@ -754,6 +755,8 @@
             body.appendChild(bubble);
           });
           body.scrollTop = body.scrollHeight;
+        }, err => {
+          console.log("Chat error: " + err.message);
         });
     }
 
@@ -773,13 +776,17 @@
       const chatId = [currentUserPhone, activeChatContact.phone].sort().join('_');
       input.value = '';
 
-      await db.collection('chats').doc(chatId).collection('messages').add({
-        sender: currentUser,
-        senderPhone: currentUserPhone,
-        receiverPhone: activeChatContact.phone,
-        text: text,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      try {
+        await db.collection('chats').doc(chatId).collection('messages').add({
+          sender: currentUser,
+          senderPhone: currentUserPhone,
+          receiverPhone: activeChatContact.phone,
+          text: text,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch(e) {
+        alert('Send failed: ' + e.message);
+      }
     }
 
     // ==========================================
@@ -840,6 +847,8 @@
           if (count === 0) {
             container.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No posts from your contacts yet. Tap "Sync Contacts" to see posts from your phonebook!</p>';
           }
+        }, err => {
+          console.log("Feed error: " + err.message);
         });
     }
 
@@ -848,16 +857,20 @@
       const text = input.value.trim();
       if (!text) return;
 
-      await db.collection('posts').add({
-        author: currentUser,
-        authorPhone: currentUserPhone,
-        content: text,
-        likes: 0,
-        likedBy: [],
-        comments: [],
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      input.value = '';
+      try {
+        await db.collection('posts').add({
+          author: currentUser,
+          authorPhone: currentUserPhone,
+          content: text,
+          likes: 0,
+          likedBy: [],
+          comments: [],
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        input.value = '';
+      } catch(e) {
+        alert('Post failed: ' + e.message);
+      }
     }
 
     async function editPost(id, oldTextEncoded) {
@@ -920,7 +933,7 @@
       }
     }
 
-  // ==========================================
+    // ==========================================
     // 6. VTU, VTPASS & PAYSTACK INTEGRATION
     // (WITH YOUR REAL PAYSTACK & VTPASS KEYS)
     // ==========================================
