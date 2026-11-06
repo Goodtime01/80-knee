@@ -508,96 +508,89 @@
       document.getElementById('phone-field-wrapper').style.display = isLoginMode ? 'none' : 'block';
     }
 
+    // *** FIXED AREA STARTS HERE ***
     async function signInWithGoogle() {
-      let email = prompt('Google Sign-In: Enter your Google email:');
-      if (!email || !email.includes('@')) {
-        alert('Valid Google email required.');
-        return;
+      try {
+        let email = prompt('Google Sign-In: Enter your Google email:');
+        if (!email || !email.includes('@')) {
+          alert('Valid Google email required.');
+          return;
+        }
+        const userDoc = await db.collection('users').where('email', '==', email.trim().toLowerCase()).get();
+        if (!userDoc.empty) {
+          const data = userDoc.docs[0].data();
+          completeLogin(data.email, data.phone);
+        } else {
+          let phone = prompt('Enter your phone number with country code (e.g. +234... or local):');
+          phone = cleanPhone(phone);
+          if (!phone || phone.length < 8) {
+            alert('A valid phone number is required to use 80 knee.');
+            return;
+          }
+          await db.collection('users').doc(phone).set({
+            email: email.trim().toLowerCase(),
+            phone: phone,
+            authType: 'google',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          completeLogin(email.trim().toLowerCase(), phone);
+        }
+      } catch(e) {
+        alert('Login error: ' + e.message);
       }
+    }
 
-      const userDoc = await db.collection('users').where('email', '==', email.trim().toLowerCase()).get();
-
-      if (!userDoc.empty) {
-        const data = userDoc.docs[0].data();
-        completeLogin(data.email, data.phone);
-      } else {
-        let phone = prompt('Enter your phone number with country code (e.g. +234... or local):');
-        phone = cleanPhone(phone);
-        if (!phone || phone.length < 8) {
-          alert('A valid phone number is required to use 80 knee.');
+    async function handleAuth() {
+      try {
+        const email = document.getElementById('auth-email').value.trim().toLowerCase();
+        const pass = document.getElementById('auth-password').value.trim();
+        if (!email || !email.includes('@') || !pass) {
+          alert('Please enter a valid email address and password!');
           return;
         }
-
-        await db.collection('users').doc(phone).set({
-          email: email.trim().toLowerCase(),
-          phone: phone,
-          authType: 'google',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-    completeLogin(email, phone);
-  }
-  } catch(e) {
-    alert('Login error: ' + e.message);
-  }
-}
-
-async function handleAuth() {
-      const email = document.getElementById('auth-email').value.trim().toLowerCase();
-      const pass = document.getElementById('auth-password').value.trim();
-
-      if (!email || !email.includes('@') || !pass) {
-        alert('Please enter a valid email address and password!');
-        return;
+        if (isLoginMode) {
+          const snapshot = await db.collection('users').where('email', '==', email).get();
+          if (snapshot.empty || snapshot.docs[0].data().password !== pass) {
+            alert('Invalid email or password!');
+            return;
+          }
+          const user = snapshot.docs[0].data();
+          completeLogin(user.email, user.phone);
+        } else {
+          const phone = cleanPhone(document.getElementById('auth-phone').value);
+          if (!phone || phone.length < 8) {
+            alert('Please enter a valid phone number with country code!');
+            return;
+          }
+          const existingPhone = await db.collection('users').doc(phone).get();
+          if (existingPhone.exists) {
+            alert('This phone number is already registered. Please log in.');
+            return;
+          }
+          await db.collection('users').doc(phone).set({
+            email: email,
+            phone: phone,
+            password: pass,
+            authType: 'email',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          completeLogin(email, phone);
+        }
+      } catch(e) {
+        alert('Error: ' + e.message);
       }
-
-      if (isLoginMode) {
-        const snapshot = await db.collection('users').where('email', '==', email).get();
-        if (snapshot.empty || snapshot.docs[0].data().password !== pass) {
-          alert('Invalid email or password!');
-          return;
-        }
-        const user = snapshot.docs[0].data();
-        completeLogin(user.email, user.phone);
-      } else {
-        const phone = cleanPhone(document.getElementById('auth-phone').value);
-        if (!phone || phone.length < 8) {
-          alert('Please enter a valid phone number with country code!');
-          return;
-        }
-
-        const existingPhone = await db.collection('users').doc(phone).get();
-        if (existingPhone.exists) {
-          alert('This phone number is already registered. Please log in.');
-          return;
-        }
-
-        await db.collection('users').doc(phone).set({
-          email: email,
-          phone: phone,
-          password: pass,
-          authType: 'email',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-    completeLogin(email, phone);
-}
-)
+    }
+    // *** FIXED AREA ENDS HERE ***
 
     function completeLogin(identifier, phone) {
       currentUser = identifier;
       currentUserPhone = phone;
-
       localStorage.setItem('80knee_user', JSON.stringify({ email: identifier, phone }));
-
       document.getElementById('user-display').innerText = `${phone}`;
-      
-      // Unlock: Reveal Screens & Bottom Nav
       document.getElementById('auth-screen').classList.remove('active');
       document.getElementById('feed-screen').classList.add('active');
       const nav = document.getElementById('main-nav');
       nav.style.setProperty('display', 'flex', 'important');
-
       loadSavedContacts();
     }
 
@@ -626,7 +619,7 @@ async function handleAuth() {
       element.classList.add('active');
     }
 
-    // ==========================================
+      // ==========================================
     // 3. REAL NATIVE CONTACT PICKER & SMS INVITES
     // ==========================================
     async function syncPhoneContacts() {
@@ -985,10 +978,7 @@ async function handleAuth() {
         ref: transRef,
         channels: ['bank_transfer', 'card', 'ussd', 'bank'],
         callback: function(response) {
-          // 1. Payment confirmed by Paystack!
           alert(`🎉 Payment of ₦${amount} Confirmed!\nRef: ${response.reference}\n\nDispatching ${label} to ${phone} via VTPass...`);
-          
-          // 2. Automatically dispatch airtime/data through VTPass
           deliverVTPassFulfillment(phone, amount, selectedNet, vtuMode, response.reference);
         },
         onClose: function() {
@@ -1010,11 +1000,9 @@ async function handleAuth() {
 
       const serviceID = networkMap[network.toUpperCase()] || 'mtn';
 
-      // Standard VTPass Request ID format (YYYYMMDDHHII + random numbers)
       const now = new Date();
       const requestId = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${Math.floor(1000+Math.random()*9000)}`;
 
-      // Save order to Firebase Cloud Database immediately
       const orderRef = await db.collection('vtu_orders').add({
         user: currentUser,
         userPhone: currentUserPhone,
@@ -1055,7 +1043,6 @@ async function handleAuth() {
         }
       } catch (err) {
         console.warn('VTPass Gateway Log:', err);
-        // Transaction saved in database for automatic batch delivery
         alert(`✅ Payment Recorded!\nOrder #${paystackRef} has been saved to your 80 knee cloud database for instant network delivery.`);
       }
     }
