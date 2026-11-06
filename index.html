@@ -581,9 +581,12 @@ async function handleAuth() {
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        completeLogin(email, phone);
-      }
-    }
+    completeLogin(email, phone);
+  }
+  } catch(e) {
+    alert('Login error: ' + e.message);
+  }
+}
 
     function completeLogin(identifier, phone) {
       currentUser = identifier;
