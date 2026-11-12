@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>80 knee</title>
 
-  <!-- 1. Paystack Official SDK -->
-  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <!-- PWA Manifest & App Info -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
 
-  <!-- 2. Firebase App, Firestore & REAL AUTH SDKs -->
+  <!-- Paystack & Firebase Cloud SDKs -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -53,6 +55,9 @@
       border-radius: 20px; 
       font-size: 12px; 
       font-weight: 600; 
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     /* Screen Layouts */
@@ -142,7 +147,8 @@
     .btn-blue { 
       background: #0284c7; 
     }
-/* Post Cards */
+
+    /* Post Cards */
     .card { 
       background: #1e293b; 
       border-radius: 14px; 
@@ -332,19 +338,30 @@
 </head>
 <body>
 
-  <!-- Top Header -->
+
+
+
+
+
+
+
+
+
+<!-- Top Header -->
   <div class="top-bar">
     <div class="logo">80 knee</div>
-    <div class="user-pill" id="user-display">🔒 Sign In Required</div>
+    <div class="user-pill" id="user-display">
+      <span>🔒 Sign In Required</span>
+    </div>
   </div>
 
-  <!-- Screen 0: Strict Authentication Lockout -->
+  <!-- Screen 0: Auth Screen -->
   <div id="auth-screen" class="screen active">
     <div class="auth-card">
       <h2 style="color:#38bdf8; margin-bottom: 6px;" id="auth-title">Welcome to 80 knee</h2>
       <p style="font-size:13px; color:#94a3b8; margin-bottom:16px;" id="auth-subtitle">Sign in or create an account to access 80 knee</p>
       
-      <!-- REAL Google Sign-In Button -->
+      <!-- Real Google Sign-In Button -->
       <button class="google-btn" type="button" onclick="signInWithGoogle()">
         <svg width="18" height="18" viewBox="0 0 48 48">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -365,7 +382,6 @@
 
       <button class="btn btn-blue" id="auth-submit-btn" type="button" onclick="handleAuth()">Sign Up & Continue</button>
 
-      <!-- Toggle Sign Up vs Login -->
       <p style="font-size: 13px; color: #94a3b8; margin-top: 16px;">
         <span id="auth-toggle-label">Already have an account?</span> 
         <a href="javascript:void(0)" onclick="toggleAuthMode()" id="auth-toggle-btn" style="color: #38bdf8; font-weight: bold; text-decoration: none;">Log In</a>
@@ -373,7 +389,7 @@
     </div>
   </div>
 
-<!-- Screen 1: Feed -->
+  <!-- Screen 1: Feed -->
   <div id="feed-screen" class="screen">
     <div class="card">
       <textarea id="post-input" class="input-box" rows="2" style="resize:none;" placeholder="Share a post with your contacts..."></textarea>
@@ -446,7 +462,7 @@
     <button class="btn" type="button" onclick="openBankCheckout()">Pay From Bank Account</button>
   </div>
 
-  <!-- Bottom Navigation Bar (Locked until login) -->
+  <!-- Bottom Navigation Bar -->
   <div class="nav-bar" id="main-nav" style="display:none !important;">
     <div class="nav-item active" onclick="switchTab('feed-screen', this)">
       <div class="nav-icon">📰</div>
@@ -463,9 +479,19 @@
   </div>
 
 
+
+
+
+
+
+
+
+
+
+
 <script>
     // ==========================================
-    // 1. FIREBASE INITIALIZATION & REAL AUTH
+    // 1. FIREBASE CONFIGURATION (YOUR LIVE KEYS)
     // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyDe36CpQIndbGJ7Wq9ViBQJZXRYJY4lD9U",
@@ -490,16 +516,21 @@
     let chatUnsubscribe = null;
     let mySyncedContacts = [];
 
+    // BULLETPROOF DIGITS-ONLY PHONE CLEANER (Guarantees room match)
     function cleanPhone(num) {
       if (!num) return '';
-      let cleaned = num.trim().replace(/[\s\-\(\)]/g, '');
-      if (cleaned.startsWith('0') && cleaned.length === 11) {
-        cleaned = '+234' + cleaned.substring(1);
+      let digits = String(num).replace(/\D/g, '');
+      if (digits.startsWith('0') && digits.length === 11) {
+        digits = '234' + digits.substring(1);
+      } else if (!digits.startsWith('234') && digits.length === 10) {
+        digits = '234' + digits;
       }
-      return cleaned;
+      return digits;
     }
 
-    // Toggle Sign Up vs Log In mode
+    // ==========================================
+    // 2. AUTHENTICATION & SESSION MANAGEMENT
+    // ==========================================
     function toggleAuthMode() {
       isLoginMode = !isLoginMode;
       document.getElementById('auth-title').innerText = isLoginMode ? 'Welcome Back' : 'Welcome to 80 knee';
@@ -510,20 +541,16 @@
       document.getElementById('phone-field-wrapper').style.display = isLoginMode ? 'none' : 'block';
     }
 
-    // ==========================================
-    // REAL GOOGLE AUTH (OFFICIAL GOOGLE POPUP)
-    // ==========================================
     async function signInWithGoogle() {
       try {
         const result = await auth.signInWithPopup(googleProvider);
         const user = result.user;
 
-        // Check if user already has phone number saved in database
         const userDoc = await db.collection('users').doc(user.uid).get();
         let phone = userDoc.exists ? userDoc.data().phone : null;
 
         if (!phone) {
-          phone = prompt(`Google Verified (${user.email})!\nEnter your phone number with country code (+234...) to sync contacts:`);
+          phone = prompt(`Google Verified (${user.email})!\nEnter your phone number with country code (+234...):`);
           phone = cleanPhone(phone);
           if (!phone || phone.length < 8) {
             alert('A valid phone number is required to use 80 knee.');
@@ -542,14 +569,11 @@
 
         completeLogin(user.displayName || user.email, phone);
       } catch (error) {
-        console.error('Google Sign-In Error:', error);
+        console.error('Google Auth Error:', error);
         alert('Google Authentication: ' + error.message);
       }
     }
 
-    // ==========================================
-    // REAL EMAIL & PASSWORD (FIREBASE IDENTITY)
-    // ==========================================
     async function handleAuth() {
       const email = document.getElementById('auth-email').value.trim().toLowerCase();
       const pass = document.getElementById('auth-password').value.trim();
@@ -566,15 +590,13 @@
 
       try {
         if (isLoginMode) {
-          // Real Firebase Password Verification
           const userCred = await auth.signInWithEmailAndPassword(email, pass);
           const userDoc = await db.collection('users').doc(userCred.user.uid).get();
-          const uPhone = userDoc.exists ? userDoc.data().phone : '+2348000000000';
+          const uPhone = userDoc.exists ? userDoc.data().phone : '2348000000000';
           completeLogin(email, uPhone);
         } else {
-          // Real Firebase Account Creation
           if (!phone || phone.length < 8) {
-            alert('Please enter a valid phone number with country code (+234...)!');
+            alert('Phone number required for registration!');
             submitBtn.innerText = 'Sign Up & Continue';
             submitBtn.disabled = false;
             return;
@@ -597,7 +619,6 @@
       }
     }
 
-    // Auto-listen to real Firebase login state
     auth.onAuthStateChanged(async (user) => {
       if (user && !currentUser) {
         try {
@@ -613,17 +634,27 @@
 
     function completeLogin(identifier, phone) {
       currentUser = identifier;
-      currentUserPhone = phone;
+      currentUserPhone = cleanPhone(phone);
 
-      document.getElementById('user-display').innerText = `${phone}`;
+      localStorage.setItem('80knee_user', JSON.stringify({ email: identifier, phone: currentUserPhone }));
+
+      document.getElementById('user-display').innerHTML = `
+        <span>${currentUserPhone}</span>
+        <span onclick="handleLogout()" style="cursor:pointer; font-size:11px; color:#f43f5e; margin-left:6px; text-decoration:underline;">Logout</span>
+      `;
       
-      // STRICT UNLOCK: Reveal App & Navigation Bar
       document.getElementById('auth-screen').classList.remove('active');
       document.getElementById('feed-screen').classList.add('active');
       const nav = document.getElementById('main-nav');
       nav.style.setProperty('display', 'flex', 'important');
 
       loadSavedContacts();
+    }
+
+    function handleLogout() {
+      auth.signOut();
+      localStorage.removeItem('80knee_user');
+      location.reload();
     }
 
     function switchTab(screenId, element) {
@@ -638,7 +669,7 @@
     }
 
     // ==========================================
-    // 3. CONTACT PICKER & NATIVE SMS INVITES
+    // 3. CONTACT PICKER & SMS INVITES
     // ==========================================
     async function syncPhoneContacts() {
       if ('contacts' in navigator && 'select' in navigator.contacts) {
@@ -729,30 +760,15 @@
     }
 
     function inviteContact(phone, name) {
+      const clean = cleanPhone(phone);
       const text = encodeURIComponent(`Hello ${name}, join me on 80 knee to chat, post, and recharge airtime/data: https://eight0-knee.onrender.com/`);
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const clean = phone.replace(/[^0-9+]/g, '');
       window.location.href = isIOS ? `sms:${clean}&body=${text}` : `sms:${clean}?body=${text}`;
     }
-// ==========================================
-    // 4. WHATSAPP STYLE 1-ON-1 DIRECT MESSAGING
+
     // ==========================================
-    
-
-
-// 1. BULLETPROOF PHONE NORMALIZATION (Converts all numbers to 23480... format)
-    function cleanPhone(num) {
-      if (!num) return '';
-      let digits = String(num).replace(/\D/g, ''); // Strips all symbols (+, -, spaces)
-      if (digits.startsWith('0') && digits.length === 11) {
-        digits = '234' + digits.substring(1);
-      } else if (!digits.startsWith('234') && digits.length === 10) {
-        digits = '234' + digits;
-      }
-      return digits; // Always returns clean digits like 2348012345678
-    }
-
-    // 2. OPEN CHAT (Guaranteed Same Room on Both Phones)
+    // 4. FIXED 1-ON-1 CHAT (INSTANT DELIVERY)
+    // ==========================================
     function openChat(recipientPhone, recipientName) {
       const cleanRecipient = cleanPhone(recipientPhone);
       const cleanCurrent = cleanPhone(currentUserPhone);
@@ -764,32 +780,35 @@
 
       if (chatUnsubscribe) chatUnsubscribe();
 
-      // Creates 100% identical room ID regardless of which phone opens it
       const chatId = [cleanCurrent, cleanRecipient].sort().join('_');
 
-      if (db) {
-        chatUnsubscribe = db.collection('chats').doc(chatId).collection('messages')
-          .orderBy('createdAt', 'asc')
-          .onSnapshot(snapshot => {
-            const body = document.getElementById('chat-body');
-            body.innerHTML = '';
-            snapshot.forEach(doc => {
-              const m = doc.data();
-              const bubble = document.createElement('div');
-              // Matches sender cleanly
-              const isMe = cleanPhone(m.senderPhone) === cleanCurrent;
-              bubble.className = `bubble ${isMe ? 'me' : 'them'}`;
-              bubble.innerText = m.text;
-              body.appendChild(bubble);
-            });
-            body.scrollTop = body.scrollHeight;
-          }, err => {
-            console.error("Chat sync error:", err);
+      chatUnsubscribe = db.collection('chats').doc(chatId).collection('messages')
+        .orderBy('createdAt', 'asc')
+        .onSnapshot(snapshot => {
+          const body = document.getElementById('chat-body');
+          body.innerHTML = '';
+          snapshot.forEach(doc => {
+            const m = doc.data();
+            const bubble = document.createElement('div');
+            const isMe = cleanPhone(m.senderPhone) === cleanCurrent;
+            bubble.className = `bubble ${isMe ? 'me' : 'them'}`;
+            bubble.innerText = m.text;
+            body.appendChild(bubble);
           });
+          body.scrollTop = body.scrollHeight; // Auto-scrolls to newest message
+        }, err => {
+          console.error("Chat sync notice:", err);
+        });
+    }
+
+    function closeChat() {
+      document.getElementById('chat-view').style.display = 'none';
+      if (chatUnsubscribe) {
+        chatUnsubscribe();
+        chatUnsubscribe = null;
       }
     }
 
-    // 3. SEND MESSAGE (Instant Real-time Dispatch)
     async function sendChatMessage() {
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
@@ -801,29 +820,31 @@
       input.value = '';
 
       const chatId = [cleanCurrent, cleanRecipient].sort().join('_');
-
-      if (db) {
-        await db.collection('chats').doc(chatId).collection('messages').add({
-          sender: currentUser,
-          senderPhone: cleanCurrent,
-          receiverPhone: cleanRecipient,
-          text: text,
-          createdAt: Date.now() // Guarantees instant appearance without delay
-        });
-      }
+      await db.collection('chats').doc(chatId).collection('messages').add({
+        sender: currentUser,
+        senderPhone: cleanCurrent,
+        receiverPhone: cleanRecipient,
+        text: text,
+        createdAt: Date.now() // Instant delivery, zero delay
+      });
     }
 
 
 
 
-    // ==========================================
+
+
+
+
+
+// ==========================================
     // 5. CONTACT-ONLY FEED & POST EDITING
     // ==========================================
     function listenToContactFeed() {
-      const allowedPhones = [currentUserPhone, ...mySyncedContacts.map(c => c.phone)];
+      const allowedPhones = [cleanPhone(currentUserPhone), ...mySyncedContacts.map(c => cleanPhone(c.phone))];
 
       db.collection('posts')
-        .orderBy('timestamp', 'desc')
+        .orderBy('createdAt', 'desc')
         .onSnapshot(snapshot => {
           const container = document.getElementById('posts-container');
           container.innerHTML = '';
@@ -831,7 +852,7 @@
 
           snapshot.forEach(doc => {
             const post = { id: doc.id, ...doc.data() };
-            if (allowedPhones.includes(post.authorPhone)) {
+            if (allowedPhones.includes(cleanPhone(post.authorPhone))) {
               count++;
               renderPostCard(container, post);
             }
@@ -844,7 +865,7 @@
     }
 
     function renderPostCard(container, post) {
-      const isMine = post.authorPhone === currentUserPhone;
+      const isMine = cleanPhone(post.authorPhone) === cleanPhone(currentUserPhone);
       const card = document.createElement('div');
       card.className = 'card';
       card.innerHTML = `
@@ -855,7 +876,7 @@
         <p style="font-size: 14px; color: #cbd5e1; line-height: 1.4; margin-bottom: 10px;">${post.content}</p>
         <div class="post-actions">
           <span onclick="toggleLike('${post.id}', ${post.likes || 0})">
-            ${(post.likedBy || []).includes(currentUserPhone) ? '❤️' : '🤍'} ${post.likes || 0}
+            ${(post.likedBy || []).includes(cleanPhone(currentUserPhone)) ? '❤️' : '🤍'} ${post.likes || 0}
           </span>
           <span onclick="toggleComments('${post.id}')">
             💬 ${(post.comments || []).length} Comments
@@ -886,12 +907,12 @@
 
       await db.collection('posts').add({
         author: currentUser,
-        authorPhone: currentUserPhone,
+        authorPhone: cleanPhone(currentUserPhone),
         content: text,
         likes: 0,
         likedBy: [],
         comments: [],
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now()
       });
     }
 
@@ -907,18 +928,19 @@
       const doc = await ref.get();
       if (!doc.exists) return;
       
+      const cleanUser = cleanPhone(currentUserPhone);
       const likedBy = doc.data().likedBy || [];
-      const isLiked = likedBy.includes(currentUserPhone);
+      const isLiked = likedBy.includes(cleanUser);
 
       if (isLiked) {
         await ref.update({
           likes: Math.max(0, currentLikes - 1),
-          likedBy: firebase.firestore.FieldValue.arrayRemove(currentUserPhone)
+          likedBy: firebase.firestore.FieldValue.arrayRemove(cleanUser)
         });
       } else {
         await ref.update({
           likes: currentLikes + 1,
-          likedBy: firebase.firestore.FieldValue.arrayUnion(currentUserPhone)
+          likedBy: firebase.firestore.FieldValue.arrayUnion(cleanUser)
         });
       }
     }
@@ -950,7 +972,7 @@
     }
 
     // ==========================================
-    // 6. VTU, VTPASS & LIVE PAYSTACK CHECKOUT
+    // 6. VTU, VTPASS & LIVE PAYSTACK INTEGRATION
     // ==========================================
     const VTPASS_API_KEY = '3a3fd3a4d9fd1f696c2137497b527ed2';
     const VTPASS_PUBLIC_KEY = 'PK_669fce066b3e90f9d662c1f163cf92534e285944b9e';
@@ -998,7 +1020,7 @@
     }
 
     function payWithPaystack(amount, label, phone) {
-      const userEmail = `${currentUserPhone.replace(/[^0-9]/g, '')}@80knee.com`;
+      const userEmail = `${currentUserPhone}@80knee.com`;
       const transRef = '80KNEE_' + Math.floor(Math.random() * 1000000000 + 1);
 
       const handler = PaystackPop.setup({
@@ -1036,7 +1058,7 @@
         paystackRef: paystackRef,
         requestId: requestId,
         status: 'SENT_TO_VTPASS',
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now()
       });
 
       try {
@@ -1057,7 +1079,7 @@
 
         const result = await response.json();
         if (result.code === '000') {
-          alert(`✅ AIRTIME DELIVERED!\n\n₦${amount} ${network} recharge credited to ${phone}.`);
+          alert(`✅ AIRTIME DELIVERED!\n\n₦${amount} ${network} recharge has been credited to ${phone}.`);
         } else {
           alert(`Telecom Status: ${result.response_description || 'Processed by network.'}`);
         }
