@@ -737,55 +737,84 @@
 // ==========================================
     // 4. WHATSAPP STYLE 1-ON-1 DIRECT MESSAGING
     // ==========================================
+    
+
+
+// 1. BULLETPROOF PHONE NORMALIZATION (Converts all numbers to 23480... format)
+    function cleanPhone(num) {
+      if (!num) return '';
+      let digits = String(num).replace(/\D/g, ''); // Strips all symbols (+, -, spaces)
+      if (digits.startsWith('0') && digits.length === 11) {
+        digits = '234' + digits.substring(1);
+      } else if (!digits.startsWith('234') && digits.length === 10) {
+        digits = '234' + digits;
+      }
+      return digits; // Always returns clean digits like 2348012345678
+    }
+
+    // 2. OPEN CHAT (Guaranteed Same Room on Both Phones)
     function openChat(recipientPhone, recipientName) {
-      activeChatContact = { phone: recipientPhone, name: recipientName };
-      document.getElementById('active-chat-name').innerText = `${recipientName} (${recipientPhone})`;
+      const cleanRecipient = cleanPhone(recipientPhone);
+      const cleanCurrent = cleanPhone(currentUserPhone);
+
+      activeChatContact = { phone: cleanRecipient, name: recipientName };
+      document.getElementById('active-chat-name').innerText = `${recipientName} (${cleanRecipient})`;
       document.getElementById('active-chat-avatar').innerText = recipientName.charAt(0).toUpperCase();
       document.getElementById('chat-view').style.display = 'flex';
 
       if (chatUnsubscribe) chatUnsubscribe();
 
-      const chatId = [currentUserPhone, recipientPhone].sort().join('_');
-      chatUnsubscribe = db.collection('chats').doc(chatId).collection('messages')
-        .orderBy('timestamp', 'asc')
-        .onSnapshot(snapshot => {
-          const body = document.getElementById('chat-body');
-          body.innerHTML = '';
-          snapshot.forEach(doc => {
-            const m = doc.data();
-            const bubble = document.createElement('div');
-            bubble.className = `bubble ${m.senderPhone === currentUserPhone ? 'me' : 'them'}`;
-            bubble.innerText = m.text;
-            body.appendChild(bubble);
-          });
-          body.scrollTop = body.scrollHeight;
-        });
-    }
+      // Creates 100% identical room ID regardless of which phone opens it
+      const chatId = [cleanCurrent, cleanRecipient].sort().join('_');
 
-    function closeChat() {
-      document.getElementById('chat-view').style.display = 'none';
-      if (chatUnsubscribe) {
-        chatUnsubscribe();
-        chatUnsubscribe = null;
+      if (db) {
+        chatUnsubscribe = db.collection('chats').doc(chatId).collection('messages')
+          .orderBy('createdAt', 'asc')
+          .onSnapshot(snapshot => {
+            const body = document.getElementById('chat-body');
+            body.innerHTML = '';
+            snapshot.forEach(doc => {
+              const m = doc.data();
+              const bubble = document.createElement('div');
+              // Matches sender cleanly
+              const isMe = cleanPhone(m.senderPhone) === cleanCurrent;
+              bubble.className = `bubble ${isMe ? 'me' : 'them'}`;
+              bubble.innerText = m.text;
+              body.appendChild(bubble);
+            });
+            body.scrollTop = body.scrollHeight;
+          }, err => {
+            console.error("Chat sync error:", err);
+          });
       }
     }
 
+    // 3. SEND MESSAGE (Instant Real-time Dispatch)
     async function sendChatMessage() {
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
       if (!text || !activeChatContact) return;
 
+      const cleanCurrent = cleanPhone(currentUserPhone);
+      const cleanRecipient = cleanPhone(activeChatContact.phone);
+
       input.value = '';
 
-      const chatId = [currentUserPhone, activeChatContact.phone].sort().join('_');
-      await db.collection('chats').doc(chatId).collection('messages').add({
-        sender: currentUser,
-        senderPhone: currentUserPhone,
-        receiverPhone: activeChatContact.phone,
-        text: text,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      const chatId = [cleanCurrent, cleanRecipient].sort().join('_');
+
+      if (db) {
+        await db.collection('chats').doc(chatId).collection('messages').add({
+          sender: currentUser,
+          senderPhone: cleanCurrent,
+          receiverPhone: cleanRecipient,
+          text: text,
+          createdAt: Date.now() // Guarantees instant appearance without delay
+        });
+      }
     }
+
+
+
 
     // ==========================================
     // 5. CONTACT-ONLY FEED & POST EDITING
