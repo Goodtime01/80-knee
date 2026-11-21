@@ -442,7 +442,7 @@
       color: white; 
     }
 
-    /* Fixed Bottom Nav (3 Clean Tabs: Feed, Chat, VTU) */
+    /* Fixed Bottom Nav (3 Clean Tabs) */
     .nav-bar { 
       position: fixed;
       bottom: 0;
@@ -631,7 +631,7 @@
         ℹ️ Profile updates (photo, bio, name) are allowed once every 10 days.
       </div>
 
-      <!-- Enhanced Profile Photo Section -->
+      <!-- Profile Photo Section -->
       <div class="profile-photo-wrapper">
         <img id="modal-profile-img" class="profile-photo-large" src="" alt="Profile" style="display:none;">
         <div id="modal-profile-placeholder" class="profile-photo-large">?</div>
@@ -639,7 +639,7 @@
       </div>
       
       <!-- Direct Photo Upload Button -->
-      <button class="btn btn-blue" id="upload-photo-btn" style="width:auto; padding:6px 14px; font-size:12px; margin-bottom:14px;" type="button" onclick="triggerPhotoPick()">
+      <button class="btn btn-blue" id="upload-photo-btn" style="width:auto; padding:8px 16px; font-size:13px; margin-bottom:14px; font-weight:700;" type="button" onclick="triggerPhotoPick()">
         Upload / Change Photo 📸
       </button>
       <input type="file" id="avatar-file-input" accept="image/*" style="display:none;" onchange="uploadProfilePhoto(event)">
@@ -700,7 +700,7 @@
     let currentUserPhone = null;
     let myAvatar = "";
     let myBio = "";
-    let lastProfileUpdate = 0; // Timestamp of last edit
+    let lastProfileUpdate = 0;
     let isLoginMode = false;
     let vtuMode = 'airtime';
     let selectedNet = 'MTN';
@@ -708,7 +708,6 @@
     let chatUnsubscribe = null;
     let mySyncedContacts = [];
 
-    // Digits-only phone normalization
     function cleanPhone(num) {
       if (!num) return '';
       let digits = String(num).replace(/\D/g, '');
@@ -864,7 +863,7 @@
     }
 
     // ==========================================
-    // 3. PROFILE WITH 10-DAY EDIT LOCK & PHOTO
+    // 3. PROFILE LOGIC (SMART SELF-DETECTION)
     // ==========================================
     async function loadUserProfile() {
       if (!auth.currentUser) return;
@@ -879,18 +878,18 @@
     }
 
     function triggerPhotoPick() {
-      // Check 10-day limit before opening photo picker
       const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
       const timePassed = Date.now() - lastProfileUpdate;
 
       if (lastProfileUpdate && timePassed < TEN_DAYS_MS) {
         const daysLeft = Math.ceil((TEN_DAYS_MS - timePassed) / (24 * 60 * 60 * 1000));
-        alert(`⏳ Profile is locked!\n\nYou can only change your photo, name, or bio once every 10 days.\nYou can update again in ${daysLeft} day(s).`);
+        alert(`⏳ Profile Locked!\n\nYou can only change your photo, name, or bio once every 10 days.\nYou can update again in ${daysLeft} day(s).`);
         return;
       }
       document.getElementById('avatar-file-input').click();
     }
 
+    // Opens YOUR OWN profile with all editing features!
     function openMyProfile() {
       document.getElementById('modal-profile-title').innerText = "My Profile";
       document.getElementById('modal-profile-nickname').value = currentUser;
@@ -902,6 +901,12 @@
       const saveBtn = document.getElementById('save-profile-btn');
       const photoBtn = document.getElementById('upload-photo-btn');
       const photoBadge = document.getElementById('modal-photo-edit-badge');
+
+      // Ensure edit elements are visible
+      notice.style.display = "block";
+      photoBadge.style.display = "flex";
+      photoBtn.style.display = "inline-block";
+      document.getElementById('my-profile-actions').style.display = "block";
 
       if (lastProfileUpdate && timePassed < TEN_DAYS_MS) {
         const daysLeft = Math.ceil((TEN_DAYS_MS - timePassed) / (24 * 60 * 60 * 1000));
@@ -926,10 +931,6 @@
         photoBtn.style.opacity = "1";
       }
 
-      photoBadge.style.display = "flex";
-      photoBtn.style.display = "inline-block";
-      document.getElementById('my-profile-actions').style.display = "block";
-
       const img = document.getElementById('modal-profile-img');
       const placeholder = document.getElementById('modal-profile-placeholder');
       if (myAvatar) {
@@ -938,14 +939,22 @@
         placeholder.style.display = "none";
       } else {
         img.style.display = "none";
-        placeholder.innerText = currentUser.charAt(0).toUpperCase();
+        placeholder.innerText = (currentUser || "E").charAt(0).toUpperCase();
         placeholder.style.display = "flex";
       }
 
       document.getElementById('profile-modal').style.display = "flex";
     }
 
-    function viewUserProfile(phone, nickname, avatar, bio) {
+    // Handles clicking on ANY profile in feed or contacts:
+    // If it's YOUR profile, it automatically opens full EDIT mode!
+    function handleProfileClick(phone, nickname, avatar, bio) {
+      if (cleanPhone(phone) === cleanPhone(currentUserPhone)) {
+        openMyProfile(); // Open full edit mode for you!
+        return;
+      }
+
+      // External user view (Read-only)
       document.getElementById('modal-profile-title').innerText = `@${nickname}`;
       document.getElementById('modal-profile-nickname').value = nickname;
       document.getElementById('modal-profile-nickname').disabled = true;
@@ -976,7 +985,6 @@
       document.getElementById('cooldown-notice').style.display = "block";
     }
 
-    // High-Resolution Client Image Compression
     function uploadProfilePhoto(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1040,6 +1048,7 @@
 
         alert('✅ Profile saved! Your changes are locked for the next 10 days.');
         closeProfileModal();
+        listenToContactFeed();
       }
     }
 
@@ -1123,7 +1132,7 @@
         const item = document.createElement('div');
         item.className = 'contact-item';
         item.innerHTML = `
-          <div style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="viewUserProfile('${c.phone}', '${c.name}', '${c.avatar || ''}', '${c.bio || ''}')">
+          <div style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="handleProfileClick('${c.phone}', '${c.name}', '${c.avatar || ''}', '${c.bio || ''}')">
             ${c.avatar 
               ? `<img src="${c.avatar}" class="avatar-img" alt="">`
               : `<div class="avatar-img">${c.name.charAt(0).toUpperCase()}</div>`
@@ -1171,6 +1180,7 @@
 
 
 
+
 // ==========================================
     // 5. 1-ON-1 CHAT WITH MEDIA DISPATCH
     // ==========================================
@@ -1205,7 +1215,6 @@
             const isMe = cleanPhone(m.senderPhone) === cleanCurrent;
             bubble.className = `bubble ${isMe ? 'me' : 'them'}`;
 
-            // Render Media (Photo or Video) or Text
             let contentHtml = '';
             if (m.mediaType === 'image') {
               contentHtml += `<img src="${m.mediaUrl}" class="chat-media-img" onclick="window.open('${m.mediaUrl}')">`;
@@ -1223,7 +1232,7 @@
               doc.ref.update({ isRead: true }).catch(() => {});
             }
           });
-          body.scrollTop = body.scrollHeight; // Auto-scroll to newest message
+          body.scrollTop = body.scrollHeight;
         });
     }
 
@@ -1344,7 +1353,7 @@
       card.className = 'card';
       card.innerHTML = `
         <div class="post-header">
-          <div class="author-area" onclick="viewUserProfile('${post.authorPhone}', '${post.author}', '${post.authorAvatar || ''}', '${post.authorBio || ''}')">
+          <div class="author-area" onclick="handleProfileClick('${post.authorPhone}', '${post.author}', '${post.authorAvatar || ''}', '${post.authorBio || ''}')">
             ${post.authorAvatar 
               ? `<img src="${post.authorAvatar}" class="avatar-img" alt="">`
               : `<div class="avatar-img">${post.author.charAt(0).toUpperCase()}</div>`
