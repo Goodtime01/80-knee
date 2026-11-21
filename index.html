@@ -30,49 +30,38 @@
       overflow: hidden; 
     }
     
-    /* Top Header Matching Mockup */
+    /* Top Header */
     .top-bar { 
       background: #080e1e; 
-      padding: 14px 20px 10px 20px; 
+      padding: 14px 18px 10px 18px; 
       display: flex; 
       justify-content: space-between; 
-      align-items: flex-start; 
+      align-items: center; 
       border-bottom: 1px solid rgba(255, 255, 255, 0.06); 
       z-index: 10;
     }
     .logo { 
-      font-size: 26px; 
+      font-size: 24px; 
       font-weight: 800; 
-      color: #38bdf8; /* Bright Cyan */
+      color: #38bdf8; 
       letter-spacing: -0.5px; 
     }
     .phone-pill { 
       background: #111a2e; 
       border: 1px solid #1e293b; 
       color: #e2e8f0; 
-      padding: 3px 12px; 
+      padding: 4px 10px; 
       border-radius: 20px; 
-      font-size: 13px; 
+      font-size: 12px; 
       font-weight: 700; 
-      margin-top: 4px;
-      display: inline-block;
       letter-spacing: 0.5px;
-    }
-    .logout-btn { 
-      background: none; 
-      border: none; 
-      color: #a3e635; /* Neon Lime Green */
-      font-size: 16px; 
-      font-weight: 700; 
-      cursor: pointer; 
-      padding-top: 4px;
     }
 
     /* Screen Layouts */
     .screen { 
       flex: 1; 
       overflow-y: auto; 
-      padding: 14px 16px; 
+      padding: 16px; 
       display: none; 
       flex-direction: column;
       padding-bottom: 95px !important; 
@@ -94,7 +83,6 @@
       width: 100%; 
       max-width: 360px; 
       border: 1px solid rgba(255, 255, 255, 0.08); 
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
     .google-btn { 
       width: 100%; 
@@ -145,7 +133,7 @@
     .btn { 
       width: 100%; 
       padding: 13px; 
-      background: #a3e635; 
+      background: #a3e635; /* Neon Lime */
       border: none; 
       border-radius: 12px; 
       color: #080e1e; 
@@ -158,7 +146,7 @@
       color: white;
     }
 
-    /* Feed Cards Matching Mockup */
+    /* Post Cards */
     .card { 
       background: #0e172a; 
       border-radius: 20px; 
@@ -177,104 +165,45 @@
       align-items: center;
       gap: 10px;
     }
-    .avatar-ring {
+    .avatar-img {
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      border: 2px solid #f59e0b; /* Golden border */
+      border: 2px solid #38bdf8;
+      object-fit: cover;
+      background: #0284c7;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
       font-size: 16px;
-      background: #0284c7;
       flex-shrink: 0;
-    }
-    .author-meta {
-      display: flex;
-      flex-direction: column;
     }
     .author-name {
       font-size: 15px;
       font-weight: 700;
       color: #38bdf8;
     }
-    .pill-badge {
-      display: inline-block;
-      background: #a3e635;
-      color: #080e1e;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 12px;
-      width: fit-content;
-      margin-top: 2px;
-    }
-    .pill-trending {
-      color: #a3e635;
-      font-size: 11px;
-      font-weight: 600;
-      margin-top: 2px;
-    }
-    .avatar-stack {
-      display: flex;
-      align-items: center;
-    }
-    .avatar-stack span {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #1e293b;
-      border: 1.5px solid #080e1e;
-      margin-left: -6px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 8px;
-      color: #cbd5e1;
-    }
-    .avatar-stack span:nth-child(1) { background: #ec4899; }
-    .avatar-stack span:nth-child(2) { background: #8b5cf6; }
-    .avatar-stack span:nth-child(3) { background: #3b82f6; }
-
-    /* Highlighted Purchase Card (Lime Green from screenshot) */
-    .purchase-highlight {
-      background: #a3e635;
-      color: #080e1e;
-      border-radius: 16px;
-      padding: 14px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-    }
-    .purchase-highlight p {
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: #080e1e;
-    }
-    .purchase-highlight .sub {
+    .bio-text {
       font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      color: #080e1e;
+      color: #94a3b8;
     }
 
     .post-actions { 
       display: flex; 
-      gap: 18px; 
+      gap: 20px; 
       padding-top: 10px; 
       font-size: 13px; 
       color: #94a3b8; 
       align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      margin-top: 8px;
     }
     .post-actions span { 
       cursor: pointer; 
       display: flex; 
       align-items: center; 
       gap: 5px; 
-    }
-    .post-actions .likes-highlight {
-      color: #fb7185; /* Soft pink-red */
     }
     .edit-btn { 
       color: #38bdf8; 
@@ -291,18 +220,44 @@
       display: none; 
     }
 
-    /* Floating Active Chats Pill */
-    .active-chats-banner {
+    /* Profile Screen Elements */
+    .profile-photo-wrapper {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 10px auto 16px auto;
+    }
+    .profile-photo-large {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #38bdf8;
+      background: #111a2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+    }
+    .photo-edit-badge {
+      position: absolute;
+      bottom: 0;
+      right: 0;
       background: #a3e635;
       color: #080e1e;
-      font-weight: 800;
-      font-size: 12px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      width: fit-content;
-      margin: 4px auto 12px auto;
-      box-shadow: 0 4px 15px rgba(163, 230, 53, 0.2);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
     }
+
+
 
 /* WhatsApp Contacts & Chat Room */
     .contact-item { 
@@ -409,7 +364,7 @@
       color: white; 
     }
 
-    /* Fixed Bottom Nav with Badges Matching Mockup */
+    /* Fixed Bottom Nav (4 Tabs: Feed, Chat, VTU, Profile) */
     .nav-bar { 
       position: fixed;
       bottom: 0;
@@ -438,41 +393,30 @@
       color: #38bdf8; 
       font-weight: 700; 
     }
-    .nav-item.active::after {
-      content: "";
-      position: absolute;
-      bottom: -8px;
-      width: 24px;
-      height: 2.5px;
-      background: #38bdf8;
-      border-radius: 2px;
-    }
     .nav-icon { 
       font-size: 20px; 
       margin-bottom: 3px; 
     }
-    .nav-badge-bubble {
+    .nav-badge-real {
       position: absolute;
       top: -3px;
       right: -8px;
-      background: #a3e635; /* Neon Lime Badge */
+      background: #a3e635; /* Neon Lime */
       color: #080e1e;
       font-size: 10px;
       font-weight: 900;
-      padding: 1px 5px;
+      padding: 1px 6px;
       border-radius: 10px;
+      display: none; /* Only visible if unread > 0 */
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Header Matching Mockup -->
+  <!-- Top Header -->
   <div class="top-bar">
-    <div>
-      <div class="logo">80 knee</div>
-      <div class="phone-pill" id="user-display">2349034331842</div>
-    </div>
-    <button class="logout-btn" onclick="handleLogout()">Logout</button>
+    <div class="logo">80 knee</div>
+    <div class="phone-pill" id="user-display">🔒 Sign In Required</div>
   </div>
 
   <!-- Screen 0: Auth Screen -->
@@ -495,7 +439,7 @@
 
       <input type="email" id="auth-email" class="input-box" placeholder="Email Address (e.g. name@gmail.com)">
       <div id="phone-field-wrapper">
-        <input type="tel" id="auth-phone" class="input-box" placeholder="Phone Number (+234...)">
+        <input type="tel" id="auth-phone" class="input-box" placeholder="Phone Number with country code (+234...)">
       </div>
       <input type="password" id="auth-password" class="input-box" placeholder="Password">
 
@@ -508,13 +452,10 @@
     </div>
   </div>
 
-  <!-- Screen 1: Feed Matching Mockup -->
+  <!-- Screen 1: Feed -->
   <div id="feed-screen" class="screen">
-    <!-- Active Chats Pill Banner -->
-    <div class="active-chats-banner">23 active chats now</div>
-
     <div class="card" style="margin-bottom:16px;">
-      <textarea id="post-input" class="input-box" rows="2" style="resize:none;" placeholder="Post your wins today 🏆"></textarea>
+      <textarea id="post-input" class="input-box" rows="2" style="resize:none;" placeholder="What is happening? Post to your contacts..."></textarea>
       <button class="btn btn-blue" type="button" onclick="createPost()">Share Post</button>
     </div>
     
@@ -532,11 +473,11 @@
     <div id="contacts-list"></div>
   </div>
 
-  <!-- WhatsApp Chat Room -->
+  <!-- WhatsApp Chat Room View -->
   <div id="chat-view" class="chat-view">
     <div class="chat-header">
       <span onclick="closeChat()" style="font-size: 24px; cursor: pointer; padding-right: 8px;">←</span>
-      <div class="avatar-ring" id="active-chat-avatar" style="width:38px; height:38px; font-size:14px;">?</div>
+      <div class="avatar-img" id="active-chat-avatar" style="width:38px; height:38px; font-size:14px;">?</div>
       <div>
         <div style="font-weight: 700; font-size: 15px;" id="active-chat-name">Contact</div>
         <div style="font-size: 11px; color: #a3e635;">Online (Direct Message)</div>
@@ -585,7 +526,28 @@
     <button class="btn" type="button" onclick="openBankCheckout()">Pay From Bank Account</button>
   </div>
 
-  <!-- Bottom Navigation Bar Matching Mockup -->
+  <!-- Screen 4: Real User Profile Screen -->
+  <div id="profile-screen" class="screen">
+    <div class="card" style="text-align:center;">
+      <div class="profile-photo-wrapper">
+        <img id="my-profile-img" class="profile-photo-large" src="" alt="Profile" style="display:none;">
+        <div id="my-profile-placeholder" class="profile-photo-large">?</div>
+        <div class="photo-edit-badge" onclick="document.getElementById('avatar-file-input').click()">📷</div>
+      </div>
+      <input type="file" id="avatar-file-input" accept="image/*" style="display:none;" onchange="uploadProfilePhoto(event)">
+
+      <label style="font-size: 12px; color: #94a3b8; text-align: left; display: block;">Nickname / Display Name</label>
+      <input type="text" id="profile-nickname" class="input-box" placeholder="Your Display Name">
+
+      <label style="font-size: 12px; color: #94a3b8; text-align: left; display: block;">Bio / Status</label>
+      <textarea id="profile-bio" class="input-box" rows="2" style="resize:none;" placeholder="Say something about yourself..."></textarea>
+
+      <button class="btn btn-blue" type="button" onclick="saveUserProfile()">Save Profile</button>
+      <button class="btn" style="background:#f43f5e; color:white; margin-top:10px;" type="button" onclick="handleLogout()">Logout Account</button>
+    </div>
+  </div>
+
+  <!-- Fixed Bottom Navigation (4 Real Tabs) -->
   <div class="nav-bar" id="main-nav" style="display:none !important;">
     <div class="nav-item active" onclick="switchTab('feed-screen', this)">
       <div class="nav-icon">📰</div>
@@ -593,19 +555,23 @@
     </div>
     <div class="nav-item" onclick="switchTab('chat-screen', this)">
       <div class="nav-icon">💬</div>
-      <span class="nav-badge-bubble">47</span>
+      <span class="nav-badge-real" id="real-unread-badge">0</span>
       <span>Chat</span>
     </div>
     <div class="nav-item" onclick="switchTab('vtu-screen', this)">
       <div class="nav-icon" style="color:#facc15;">⚡</div>
       <span>Airtime/Data</span>
     </div>
+    <div class="nav-item" onclick="switchTab('profile-screen', this)">
+      <div class="nav-icon">👤</div>
+      <span>Profile</span>
+    </div>
   </div>
 
 
 <script>
     // ==========================================
-    // 1. FIREBASE CONFIGURATION (YOUR REAL KEYS)
+    // 1. FIREBASE CONFIGURATION (YOUR LIVE KEYS)
     // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyDe36CpQIndbGJ7Wq9ViBQJZXRYJY4lD9U",
@@ -623,6 +589,8 @@
 
     let currentUser = null;
     let currentUserPhone = null;
+    let myAvatar = "";
+    let myBio = "";
     let isLoginMode = false;
     let vtuMode = 'airtime';
     let selectedNet = 'MTN';
@@ -643,7 +611,7 @@
     }
 
     // ==========================================
-    // 2. AUTHENTICATION (REAL GOOGLE & EMAIL)
+    // 2. REAL AUTHENTICATION
     // ==========================================
     function toggleAuthMode() {
       isLoginMode = !isLoginMode;
@@ -675,8 +643,9 @@
           await db.collection('users').doc(user.uid).set({
             email: user.email,
             phone: phone,
-            name: user.displayName || user.email.split('@')[0],
-            authType: 'google',
+            nickname: user.displayName || user.email.split('@')[0],
+            avatar: "",
+            bio: "Hey there! I am using 80 knee.",
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
         }
@@ -720,7 +689,9 @@
           await db.collection('users').doc(userCred.user.uid).set({
             email: email,
             phone: phone,
-            authType: 'email',
+            nickname: email.split('@')[0],
+            avatar: "",
+            bio: "Hey there! I am using 80 knee.",
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
 
@@ -738,7 +709,7 @@
         try {
           const userDoc = await db.collection('users').doc(user.uid).get();
           if (userDoc.exists && userDoc.data().phone) {
-            completeLogin(user.displayName || user.email, userDoc.data().phone);
+            completeLogin(userDoc.data().nickname || user.email, userDoc.data().phone);
           }
         } catch (e) {
           console.warn("Session check:", e);
@@ -751,7 +722,6 @@
       currentUserPhone = cleanPhone(phone);
 
       localStorage.setItem('80knee_user', JSON.stringify({ email: identifier, phone: currentUserPhone }));
-
       document.getElementById('user-display').innerText = `${currentUserPhone}`;
       
       document.getElementById('auth-screen').classList.remove('active');
@@ -759,7 +729,9 @@
       const nav = document.getElementById('main-nav');
       nav.style.setProperty('display', 'flex', 'important');
 
+      loadUserProfile();
       loadSavedContacts();
+      listenForRealUnreadMessages();
     }
 
     function handleLogout() {
@@ -780,7 +752,90 @@
     }
 
     // ==========================================
-    // 3. CONTACT PICKER & SMS INVITES
+    // 3. REAL USER PROFILE (PHOTO & BIO)
+    // ==========================================
+    async function loadUserProfile() {
+      if (!auth.currentUser) return;
+      const doc = await db.collection('users').doc(auth.currentUser.uid).get();
+      if (doc.exists) {
+        const data = doc.data();
+        currentUser = data.nickname || currentUser;
+        myBio = data.bio || "Hey there! I am using 80 knee.";
+        myAvatar = data.avatar || "";
+
+        document.getElementById('profile-nickname').value = currentUser;
+        document.getElementById('profile-bio').value = myBio;
+
+        if (myAvatar) {
+          const img = document.getElementById('my-profile-img');
+          img.src = myAvatar;
+          img.style.display = "block";
+          document.getElementById('my-profile-placeholder').style.display = "none";
+        }
+      }
+    }
+
+    // Free Client-Side Image Compression into Firestore
+    function uploadProfilePhoto(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const maxDim = 180;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            height = (height * maxDim) / width;
+            width = maxDim;
+          } else {
+            width = (width * maxDim) / height;
+            height = maxDim;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          myAvatar = canvas.toDataURL('image/jpeg', 0.8);
+          const pImg = document.getElementById('my-profile-img');
+          pImg.src = myAvatar;
+          pImg.style.display = "block";
+          document.getElementById('my-profile-placeholder').style.display = "none";
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveUserProfile() {
+      const nickname = document.getElementById('profile-nickname').value.trim();
+      const bio = document.getElementById('profile-bio').value.trim();
+
+      if (!nickname) {
+        alert('Please enter a display name / nickname!');
+        return;
+      }
+
+      currentUser = nickname;
+      myBio = bio;
+
+      if (auth.currentUser) {
+        await db.collection('users').doc(auth.currentUser.uid).set({
+          nickname: nickname,
+          bio: bio,
+          avatar: myAvatar,
+          phone: currentUserPhone
+        }, { merge: true });
+        alert('✅ Profile updated successfully!');
+      }
+    }
+
+    // ==========================================
+    // 4. CONTACT PICKER & REAL UNREAD CHATS
     // ==========================================
     async function syncPhoneContacts() {
       if ('contacts' in navigator && 'select' in navigator.contacts) {
@@ -814,13 +869,17 @@
 
         if (phone && phone !== currentUserPhone) {
           let hasApp = false;
+          let contactAvatar = "";
           try {
             const query = await db.collection('users').where('phone', '==', phone).get();
-            hasApp = !query.empty;
+            if (!query.empty) {
+              hasApp = true;
+              contactAvatar = query.docs[0].data().avatar || "";
+            }
           } catch(e) {}
 
           if (!mySyncedContacts.some(c => c.phone === phone)) {
-            mySyncedContacts.push({ name, phone, hasApp });
+            mySyncedContacts.push({ name, phone, hasApp, avatar: contactAvatar });
           }
         }
       }
@@ -844,7 +903,7 @@
       list.innerHTML = '';
 
       if (mySyncedContacts.length === 0) {
-        list.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No contacts synced yet. Tap "📲 Sync Contacts" above!</p>';
+        list.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No contacts synced yet. Tap "📲 Sync Contacts" above to connect friends!</p>';
         return;
       }
 
@@ -853,7 +912,10 @@
         item.className = 'contact-item';
         item.innerHTML = `
           <div style="display:flex; align-items:center; gap:12px;">
-            <div class="avatar-ring">${c.name.charAt(0).toUpperCase()}</div>
+            ${c.avatar 
+              ? `<img src="${c.avatar}" class="avatar-img" alt="">`
+              : `<div class="avatar-img">${c.name.charAt(0).toUpperCase()}</div>`
+            }
             <div>
               <div style="font-weight:700; font-size:15px; color:#e2e8f0;">${c.name}</div>
               <div style="font-size:12px; color:#94a3b8;">${c.phone}</div>
@@ -861,8 +923,8 @@
           </div>
           <div>
             ${c.hasApp 
-              ? `<button class="btn btn-blue" style="padding:6px 14px; font-size:12px; width:auto;" type="button" onclick="openChat('${c.phone}', '${c.name}')">Message (DM)</button>` 
-              : `<button class="btn" style="padding:6px 14px; font-size:12px; width:auto;" type="button" onclick="inviteContact('${c.phone}', '${c.name}')">Invite (SMS)</button>`
+              ? `<button class="btn btn-blue" style="padding:6px 14px; font-size:12px; width:auto;" type="button" onclick="openChat('${c.phone}', '${c.name}', '${c.avatar || ''}')">Message (DM)</button>` 
+              : `<button class="btn" style="padding:6px 14px; font-size:12px; width:auto; background:#10b981;" type="button" onclick="inviteContact('${c.phone}', '${c.name}')">Invite (SMS)</button>`
             }
           </div>
         `;
@@ -877,16 +939,42 @@
       window.location.href = isIOS ? `sms:${clean}&body=${text}` : `sms:${clean}?body=${text}`;
     }
 
+    // Real Unread Messages Counter (Only shows if > 0)
+    function listenForRealUnreadMessages() {
+      db.collectionGroup('messages')
+        .where('receiverPhone', '==', currentUserPhone)
+        .where('isRead', '==', false)
+        .onSnapshot(snapshot => {
+          const badge = document.getElementById('real-unread-badge');
+          const unreadCount = snapshot.size;
+          if (unreadCount > 0) {
+            badge.innerText = unreadCount;
+            badge.style.display = "block";
+          } else {
+            badge.style.display = "none";
+          }
+        }, err => console.warn(err));
+    }
+
+
+
+// ==========================================
+    // 5. 1-ON-1 CHAT (INSTANT & ACCURATE)
     // ==========================================
-    // 4. FIXED 1-ON-1 CHAT (INSTANT DELIVERY)
-    // ==========================================
-    function openChat(recipientPhone, recipientName) {
+    function openChat(recipientPhone, recipientName, recipientAvatar) {
       const cleanRecipient = cleanPhone(recipientPhone);
       const cleanCurrent = cleanPhone(currentUserPhone);
 
-      activeChatContact = { phone: cleanRecipient, name: recipientName };
+      activeChatContact = { phone: cleanRecipient, name: recipientName, avatar: recipientAvatar };
       document.getElementById('active-chat-name').innerText = `${recipientName} (${cleanRecipient})`;
-      document.getElementById('active-chat-avatar').innerText = recipientName.charAt(0).toUpperCase();
+      
+      const av = document.getElementById('active-chat-avatar');
+      if (recipientAvatar) {
+        av.innerHTML = `<img src="${recipientAvatar}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+      } else {
+        av.innerText = recipientName.charAt(0).toUpperCase();
+      }
+
       document.getElementById('chat-view').style.display = 'flex';
 
       if (chatUnsubscribe) chatUnsubscribe();
@@ -905,8 +993,13 @@
             bubble.className = `bubble ${isMe ? 'me' : 'them'}`;
             bubble.innerText = m.text;
             body.appendChild(bubble);
+
+            // Mark as read
+            if (!isMe && m.isRead === false) {
+              doc.ref.update({ isRead: true }).catch(() => {});
+            }
           });
-          body.scrollTop = body.scrollHeight; // Auto-scroll to newest message
+          body.scrollTop = body.scrollHeight; // Auto-scroll to bottom
         });
     }
 
@@ -934,13 +1027,13 @@
         senderPhone: cleanCurrent,
         receiverPhone: cleanRecipient,
         text: text,
-        createdAt: Date.now() // Instant delivery
+        isRead: false,
+        createdAt: Date.now()
       });
     }
 
-
-// ==========================================
-    // 5. CONTACT-ONLY FEED (MATCHING MOCKUP)
+    // ==========================================
+    // 6. REAL SOCIAL FEED (STARTING FROM 0)
     // ==========================================
     function listenToContactFeed() {
       const allowedPhones = [cleanPhone(currentUserPhone), ...mySyncedContacts.map(c => cleanPhone(c.phone))];
@@ -961,52 +1054,42 @@
           });
 
           if (count === 0) {
-            container.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">No posts from contacts yet. Post something above!</p>';
+            container.innerHTML = '<p style="color:#64748b; text-align:center; padding:30px;">No posts yet! Be the first to start the feed above 🚀</p>';
           }
         });
     }
 
     function renderPostCard(container, post) {
       const isMine = cleanPhone(post.authorPhone) === cleanPhone(currentUserPhone);
-      const isPurchase = post.content.includes('PURCHASED') || post.content.includes('topped up');
-
       const card = document.createElement('div');
       card.className = 'card';
       card.innerHTML = `
         <div class="post-header">
           <div class="author-area">
-            <div class="avatar-ring">${post.author.charAt(0).toUpperCase()}</div>
+            ${post.authorAvatar 
+              ? `<img src="${post.authorAvatar}" class="avatar-img" alt="">`
+              : `<div class="avatar-img">${post.author.charAt(0).toUpperCase()}</div>`
+            }
             <div class="author-meta">
               <div class="author-name">@${post.author} <span style="font-size:12px; font-weight:400; color:#94a3b8;">(${post.authorPhone})</span></div>
-              ${isPurchase ? '<div class="pill-trending">2m ago • Trending</div>' : '<div class="pill-badge">Viral Now 🔥</div>'}
+              <div class="bio-text">${post.authorBio || '80 knee member'}</div>
             </div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <div class="avatar-stack">
-              <span></span><span></span><span></span>
-            </div>
-            ${isMine ? `<span class="edit-btn" onclick="editPost('${post.id}')">✏️ Edit</span>` : ''}
-          </div>
+          ${isMine ? `<span class="edit-btn" onclick="editPost('${post.id}')">✏️ Edit</span>` : ''}
         </div>
 
-        ${isPurchase ? `
-          <div class="purchase-highlight">
-            <p>${post.content}</p>
-            <div class="sub">⚡ ${post.network || 'MTN'} • 5GB • ₦1,500 • PURCHASED</div>
-          </div>
-        ` : `
-          <p style="font-size: 15px; color: #e2e8f0; line-height: 1.4; margin: 10px 0;">${post.content}</p>
-        `}
+        <p style="font-size: 15px; color: #e2e8f0; line-height: 1.4; margin: 10px 0;">${post.content}</p>
 
+        <!-- Real Metrics starting from 0 -->
         <div class="post-actions">
-          <span class="likes-highlight" onclick="toggleLike('${post.id}', ${post.likes || 0})">
-            ${(post.likedBy || []).includes(cleanPhone(currentUserPhone)) ? '❤️' : '♡'} ${post.likes ? post.likes + 'K' : '12.4K'}
+          <span onclick="toggleLike('${post.id}', ${post.likes || 0})">
+            ${(post.likedBy || []).includes(cleanPhone(currentUserPhone)) ? '❤️' : '♡'} ${post.likes || 0} Likes
           </span>
           <span onclick="toggleComments('${post.id}')">
-            💬 ${(post.comments || []).length || '1,240'} Comments
+            💬 ${(post.comments || []).length || 0} Comments
           </span>
           <span onclick="sharePost('${encodeURIComponent(post.content)}')">
-            ↗ ${post.shares || '892'} Shares
+            ↗ Share
           </span>
         </div>
 
@@ -1033,11 +1116,12 @@
       await db.collection('posts').add({
         author: currentUser,
         authorPhone: cleanPhone(currentUserPhone),
+        authorAvatar: myAvatar || "",
+        authorBio: myBio || "80 knee member",
         content: text,
-        likes: 12,
+        likes: 0,
         likedBy: [],
         comments: [],
-        shares: 892,
         createdAt: Date.now()
       });
     }
@@ -1098,7 +1182,7 @@
     }
 
     // ==========================================
-    // 6. VTU, VTPASS & LIVE PAYSTACK INTEGRATION
+    // 7. VTU & LIVE PAYSTACK / VTPASS
     // ==========================================
     const VTPASS_API_KEY = '3a3fd3a4d9fd1f696c2137497b527ed2';
     const VTPASS_PUBLIC_KEY = 'PK_669fce066b3e90f9d662c1f163cf92534e285944b9e';
