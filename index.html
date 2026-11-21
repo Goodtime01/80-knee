@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>80 knee</title>
 
-  <!-- PWA & Mobile Viewport -->
+  <!-- PWA & Mobile Theme -->
   <meta name="theme-color" content="#080e1e">
 
   <!-- Paystack & Firebase Cloud SDKs -->
@@ -50,11 +50,18 @@
       background: #111a2e; 
       border: 1px solid #1e293b; 
       color: #e2e8f0; 
-      padding: 4px 10px; 
+      padding: 5px 12px; 
       border-radius: 20px; 
       font-size: 12px; 
       font-weight: 700; 
       letter-spacing: 0.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .phone-pill:hover {
+      border-color: #38bdf8;
     }
 
     /* Screen Layouts */
@@ -133,7 +140,7 @@
     .btn { 
       width: 100%; 
       padding: 13px; 
-      background: #a3e635; /* Neon Lime */
+      background: #a3e635; 
       border: none; 
       border-radius: 12px; 
       color: #080e1e; 
@@ -164,6 +171,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      cursor: pointer;
     }
     .avatar-img {
       width: 44px;
@@ -220,24 +228,42 @@
       display: none; 
     }
 
-    /* Profile Screen Elements */
+    /* Modal Sheet (For Profile Popup) */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 10001;
+      display: none;
+      justify-content: center;
+      align-items: flex-end;
+    }
+    .modal-card {
+      background: #111a2e;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 24px 24px 0 0;
+      padding: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
     .profile-photo-wrapper {
       position: relative;
-      width: 100px;
-      height: 100px;
-      margin: 10px auto 16px auto;
+      width: 90px;
+      height: 90px;
+      margin: 10px auto 14px auto;
     }
     .profile-photo-large {
-      width: 100px;
-      height: 100px;
+      width: 90px;
+      height: 90px;
       border-radius: 50%;
       object-fit: cover;
       border: 3px solid #38bdf8;
-      background: #111a2e;
+      background: #080e1e;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
+      font-size: 30px;
       font-weight: bold;
     }
     .photo-edit-badge {
@@ -246,16 +272,17 @@
       right: 0;
       background: #a3e635;
       color: #080e1e;
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
     }
+
 
 /* WhatsApp Contacts & Chat Room */
     .contact-item { 
@@ -302,6 +329,7 @@
       border-radius: 18px; 
       font-size: 14px; 
       line-height: 1.4;
+      word-wrap: break-word;
     }
     .bubble.me { 
       align-self: flex-end; 
@@ -315,6 +343,35 @@
       color: #e2e8f0;
       border-bottom-left-radius: 2px; 
       border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* Media Attachments in Chat */
+    .chat-media-img {
+      max-width: 100%;
+      max-height: 220px;
+      border-radius: 12px;
+      display: block;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+    .chat-media-video {
+      max-width: 100%;
+      max-height: 220px;
+      border-radius: 12px;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .attachment-btn {
+      background: #111a2e;
+      border: 1px solid #1e293b;
+      color: #38bdf8;
+      font-size: 18px;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* VTU & Telecom */
@@ -362,7 +419,7 @@
       color: white; 
     }
 
-    /* Fixed Bottom Nav (4 Tabs: Feed, Chat, VTU, Profile) */
+    /* Fixed Bottom Nav (3 Clean Tabs: Feed, Chat, VTU) */
     .nav-bar { 
       position: fixed;
       bottom: 0;
@@ -391,6 +448,15 @@
       color: #38bdf8; 
       font-weight: 700; 
     }
+    .nav-item.active::after {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      width: 24px;
+      height: 2.5px;
+      background: #38bdf8;
+      border-radius: 2px;
+    }
     .nav-icon { 
       font-size: 20px; 
       margin-bottom: 3px; 
@@ -399,22 +465,24 @@
       position: absolute;
       top: -3px;
       right: -8px;
-      background: #a3e635; /* Neon Lime */
+      background: #a3e635; 
       color: #080e1e;
       font-size: 10px;
       font-weight: 900;
       padding: 1px 6px;
       border-radius: 10px;
-      display: none; /* Only visible if unread > 0 */
+      display: none; 
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Header -->
+  <!-- Top Header (Pill opens your profile when clicked!) -->
   <div class="top-bar">
     <div class="logo">80 knee</div>
-    <div class="phone-pill" id="user-display">🔒 Sign In Required</div>
+    <div class="phone-pill" id="user-display" onclick="openMyProfile()">
+      <span id="user-display-text">🔒 Sign In Required</span>
+    </div>
   </div>
 
   <!-- Screen 0: Auth Screen -->
@@ -471,7 +539,7 @@
     <div id="contacts-list"></div>
   </div>
 
-  <!-- WhatsApp Chat Room View -->
+  <!-- WhatsApp Chat Room (With Picture/Video Sending) -->
   <div id="chat-view" class="chat-view">
     <div class="chat-header">
       <span onclick="closeChat()" style="font-size: 24px; cursor: pointer; padding-right: 8px;">←</span>
@@ -482,7 +550,11 @@
       </div>
     </div>
     <div class="chat-body" id="chat-body"></div>
-    <div style="padding: 12px; background: #0e172a; display: flex; gap: 8px; border-top: 1px solid #1e293b;">
+    <div style="padding: 12px; background: #0e172a; display: flex; align-items: center; gap: 8px; border-top: 1px solid #1e293b;">
+      <!-- Attachment Paperclip Button -->
+      <button class="attachment-btn" type="button" onclick="document.getElementById('chat-media-input').click()">📎</button>
+      <input type="file" id="chat-media-input" accept="image/*,video/*" style="display:none;" onchange="handleChatMediaUpload(event)">
+      
       <input type="text" id="chat-input" class="input-box" style="margin:0;" placeholder="Message...">
       <button class="btn btn-blue" style="width:auto; padding: 0 18px;" type="button" onclick="sendChatMessage()">Send</button>
     </div>
@@ -524,28 +596,35 @@
     <button class="btn" type="button" onclick="openBankCheckout()">Pay From Bank Account</button>
   </div>
 
-  <!-- Screen 4: Real User Profile Screen -->
-  <div id="profile-screen" class="screen">
-    <div class="card" style="text-align:center;">
+  <!-- Profile Slide-Up Modal (Shows on Profile Click) -->
+  <div class="modal-overlay" id="profile-modal">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="font-size:17px; color:#38bdf8;" id="modal-profile-title">My Profile</h3>
+        <span onclick="closeProfileModal()" style="font-size:22px; cursor:pointer; color:#94a3b8;">✕</span>
+      </div>
+
       <div class="profile-photo-wrapper">
-        <img id="my-profile-img" class="profile-photo-large" src="" alt="Profile" style="display:none;">
-        <div id="my-profile-placeholder" class="profile-photo-large">?</div>
-        <div class="photo-edit-badge" onclick="document.getElementById('avatar-file-input').click()">📷</div>
+        <img id="modal-profile-img" class="profile-photo-large" src="" alt="Profile" style="display:none;">
+        <div id="modal-profile-placeholder" class="profile-photo-large">?</div>
+        <div class="photo-edit-badge" id="modal-photo-edit-badge" onclick="document.getElementById('avatar-file-input').click()">📷</div>
       </div>
       <input type="file" id="avatar-file-input" accept="image/*" style="display:none;" onchange="uploadProfilePhoto(event)">
 
-      <label style="font-size: 12px; color: #94a3b8; text-align: left; display: block;">Nickname / Display Name</label>
-      <input type="text" id="profile-nickname" class="input-box" placeholder="Your Display Name">
+      <label style="font-size: 12px; color: #94a3b8; text-align: left; display: block;">Nickname</label>
+      <input type="text" id="modal-profile-nickname" class="input-box" placeholder="Your Display Name">
 
-      <label style="font-size: 12px; color: #94a3b8; text-align: left; display: block;">Bio / Status</label>
-      <textarea id="profile-bio" class="input-box" rows="2" style="resize:none;" placeholder="Say something about yourself..."></textarea>
+      <label style="font-size: 12px; color: #94a3b8; text-align: left; display: block;">Bio / About</label>
+      <textarea id="modal-profile-bio" class="input-box" rows="2" style="resize:none;" placeholder="Your bio..."></textarea>
 
-      <button class="btn btn-blue" type="button" onclick="saveUserProfile()">Save Profile</button>
-      <button class="btn" style="background:#f43f5e; color:white; margin-top:10px;" type="button" onclick="handleLogout()">Logout Account</button>
+      <div id="my-profile-actions">
+        <button class="btn btn-blue" type="button" onclick="saveUserProfile()">Save Profile</button>
+        <button class="btn" style="background:#f43f5e; color:white; margin-top:10px;" type="button" onclick="handleLogout()">Logout Account</button>
+      </div>
     </div>
   </div>
 
-  <!-- Fixed Bottom Navigation (4 Real Tabs) -->
+  <!-- Fixed Bottom Navigation (3 Clean Tabs Matching Mockup) -->
   <div class="nav-bar" id="main-nav" style="display:none !important;">
     <div class="nav-item active" onclick="switchTab('feed-screen', this)">
       <div class="nav-icon">📰</div>
@@ -559,10 +638,6 @@
     <div class="nav-item" onclick="switchTab('vtu-screen', this)">
       <div class="nav-icon" style="color:#facc15;">⚡</div>
       <span>Airtime/Data</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('profile-screen', this)">
-      <div class="nav-icon">👤</div>
-      <span>Profile</span>
     </div>
   </div>
 
@@ -596,7 +671,7 @@
     let chatUnsubscribe = null;
     let mySyncedContacts = [];
 
-    // Pure Digits Phone Normalization
+    // Digits-only phone normalization
     function cleanPhone(num) {
       if (!num) return '';
       let digits = String(num).replace(/\D/g, '');
@@ -609,7 +684,7 @@
     }
 
     // ==========================================
-    // 2. REAL AUTHENTICATION
+    // 2. AUTHENTICATION & SESSION
     // ==========================================
     function toggleAuthMode() {
       isLoginMode = !isLoginMode;
@@ -720,7 +795,7 @@
       currentUserPhone = cleanPhone(phone);
 
       localStorage.setItem('80knee_user', JSON.stringify({ email: identifier, phone: currentUserPhone }));
-      document.getElementById('user-display').innerText = `${currentUserPhone}`;
+      document.getElementById('user-display-text').innerText = `${currentUserPhone}`;
       
       document.getElementById('auth-screen').classList.remove('active');
       document.getElementById('feed-screen').classList.add('active');
@@ -750,7 +825,7 @@
     }
 
     // ==========================================
-    // 3. REAL USER PROFILE (PHOTO & BIO)
+    // 3. PROFILE MODAL (OPEN ON CLICK)
     // ==========================================
     async function loadUserProfile() {
       if (!auth.currentUser) return;
@@ -760,20 +835,61 @@
         currentUser = data.nickname || currentUser;
         myBio = data.bio || "Hey there! I am using 80 knee.";
         myAvatar = data.avatar || "";
-
-        document.getElementById('profile-nickname').value = currentUser;
-        document.getElementById('profile-bio').value = myBio;
-
-        if (myAvatar) {
-          const img = document.getElementById('my-profile-img');
-          img.src = myAvatar;
-          img.style.display = "block";
-          document.getElementById('my-profile-placeholder').style.display = "none";
-        }
       }
     }
 
-    // Free Client-Side Image Compression into Firestore
+    function openMyProfile() {
+      document.getElementById('modal-profile-title').innerText = "My Profile";
+      document.getElementById('modal-profile-nickname').value = currentUser;
+      document.getElementById('modal-profile-nickname').disabled = false;
+      document.getElementById('modal-profile-bio').value = myBio;
+      document.getElementById('modal-profile-bio').disabled = false;
+      document.getElementById('modal-photo-edit-badge').style.display = "flex";
+      document.getElementById('my-profile-actions').style.display = "block";
+
+      const img = document.getElementById('modal-profile-img');
+      const placeholder = document.getElementById('modal-profile-placeholder');
+      if (myAvatar) {
+        img.src = myAvatar;
+        img.style.display = "block";
+        placeholder.style.display = "none";
+      } else {
+        img.style.display = "none";
+        placeholder.innerText = currentUser.charAt(0).toUpperCase();
+        placeholder.style.display = "flex";
+      }
+
+      document.getElementById('profile-modal').style.display = "flex";
+    }
+
+    function viewUserProfile(phone, nickname, avatar, bio) {
+      document.getElementById('modal-profile-title').innerText = `@${nickname}`;
+      document.getElementById('modal-profile-nickname').value = nickname;
+      document.getElementById('modal-profile-nickname').disabled = true;
+      document.getElementById('modal-profile-bio').value = bio || "No bio yet.";
+      document.getElementById('modal-profile-bio').disabled = true;
+      document.getElementById('modal-photo-edit-badge').style.display = "none";
+      document.getElementById('my-profile-actions').style.display = "none";
+
+      const img = document.getElementById('modal-profile-img');
+      const placeholder = document.getElementById('modal-profile-placeholder');
+      if (avatar) {
+        img.src = avatar;
+        img.style.display = "block";
+        placeholder.style.display = "none";
+      } else {
+        img.style.display = "none";
+        placeholder.innerText = nickname.charAt(0).toUpperCase();
+        placeholder.style.display = "flex";
+      }
+
+      document.getElementById('profile-modal').style.display = "flex";
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profile-modal').style.display = "none";
+    }
+
     function uploadProfilePhoto(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -784,25 +900,18 @@
         img.onload = function() {
           const canvas = document.createElement('canvas');
           const maxDim = 180;
-          let width = img.width;
-          let height = img.height;
-          if (width > height) {
-            height = (height * maxDim) / width;
-            width = maxDim;
-          } else {
-            width = (width * maxDim) / height;
-            height = maxDim;
-          }
-          canvas.width = width;
-          canvas.height = height;
+          let w = img.width, h = img.height;
+          if (w > h) { h = (h * maxDim) / w; w = maxDim; }
+          else { w = (w * maxDim) / h; h = maxDim; }
+          canvas.width = w; canvas.height = h;
           const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
+          ctx.drawImage(img, 0, 0, w, h);
 
           myAvatar = canvas.toDataURL('image/jpeg', 0.8);
-          const pImg = document.getElementById('my-profile-img');
+          const pImg = document.getElementById('modal-profile-img');
           pImg.src = myAvatar;
           pImg.style.display = "block";
-          document.getElementById('my-profile-placeholder').style.display = "none";
+          document.getElementById('modal-profile-placeholder').style.display = "none";
         };
         img.src = e.target.result;
       };
@@ -810,11 +919,11 @@
     }
 
     async function saveUserProfile() {
-      const nickname = document.getElementById('profile-nickname').value.trim();
-      const bio = document.getElementById('profile-bio').value.trim();
+      const nickname = document.getElementById('modal-profile-nickname').value.trim();
+      const bio = document.getElementById('modal-profile-bio').value.trim();
 
       if (!nickname) {
-        alert('Please enter a display name / nickname!');
+        alert('Please enter a display name!');
         return;
       }
 
@@ -828,7 +937,8 @@
           avatar: myAvatar,
           phone: currentUserPhone
         }, { merge: true });
-        alert('✅ Profile updated successfully!');
+        alert('✅ Profile saved successfully!');
+        closeProfileModal();
       }
     }
 
@@ -868,16 +978,19 @@
         if (phone && phone !== currentUserPhone) {
           let hasApp = false;
           let contactAvatar = "";
+          let contactBio = "";
           try {
             const query = await db.collection('users').where('phone', '==', phone).get();
             if (!query.empty) {
               hasApp = true;
-              contactAvatar = query.docs[0].data().avatar || "";
+              const uData = query.docs[0].data();
+              contactAvatar = uData.avatar || "";
+              contactBio = uData.bio || "";
             }
           } catch(e) {}
 
           if (!mySyncedContacts.some(c => c.phone === phone)) {
-            mySyncedContacts.push({ name, phone, hasApp, avatar: contactAvatar });
+            mySyncedContacts.push({ name, phone, hasApp, avatar: contactAvatar, bio: contactBio });
           }
         }
       }
@@ -909,7 +1022,7 @@
         const item = document.createElement('div');
         item.className = 'contact-item';
         item.innerHTML = `
-          <div style="display:flex; align-items:center; gap:12px;">
+          <div style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="viewUserProfile('${c.phone}', '${c.name}', '${c.avatar || ''}', '${c.bio || ''}')">
             ${c.avatar 
               ? `<img src="${c.avatar}" class="avatar-img" alt="">`
               : `<div class="avatar-img">${c.name.charAt(0).toUpperCase()}</div>`
@@ -937,7 +1050,7 @@
       window.location.href = isIOS ? `sms:${clean}&body=${text}` : `sms:${clean}?body=${text}`;
     }
 
-    // Real Unread Messages Counter (Only shows if > 0)
+    // Real Unread Counter (Only shows if > 0)
     function listenForRealUnreadMessages() {
       db.collectionGroup('messages')
         .where('receiverPhone', '==', currentUserPhone)
@@ -955,8 +1068,9 @@
     }
 
 
+
 // ==========================================
-    // 5. 1-ON-1 CHAT (INSTANT & ACCURATE)
+    // 5. 1-ON-1 CHAT WITH MEDIA DISPATCH
     // ==========================================
     function openChat(recipientPhone, recipientName, recipientAvatar) {
       const cleanRecipient = cleanPhone(recipientPhone);
@@ -988,15 +1102,26 @@
             const bubble = document.createElement('div');
             const isMe = cleanPhone(m.senderPhone) === cleanCurrent;
             bubble.className = `bubble ${isMe ? 'me' : 'them'}`;
-            bubble.innerText = m.text;
+
+            // Render Media (Photo or Video) or Text
+            let contentHtml = '';
+            if (m.mediaType === 'image') {
+              contentHtml += `<img src="${m.mediaUrl}" class="chat-media-img" onclick="window.open('${m.mediaUrl}')">`;
+            } else if (m.mediaType === 'video') {
+              contentHtml += `<video src="${m.mediaUrl}" controls class="chat-media-video"></video>`;
+            }
+            if (m.text) {
+              contentHtml += `<div>${m.text}</div>`;
+            }
+
+            bubble.innerHTML = contentHtml;
             body.appendChild(bubble);
 
-            // Mark as read
             if (!isMe && m.isRead === false) {
               doc.ref.update({ isRead: true }).catch(() => {});
             }
           });
-          body.scrollTop = body.scrollHeight; // Auto-scroll to bottom
+          body.scrollTop = body.scrollHeight; // Auto-scroll to newest message
         });
     }
 
@@ -1024,13 +1149,70 @@
         senderPhone: cleanCurrent,
         receiverPhone: cleanRecipient,
         text: text,
+        mediaType: 'text',
+        isRead: false,
+        createdAt: Date.now()
+      });
+    }
+
+    // Media (Photo & Video) Chat Dispatch Engine
+    function handleChatMediaUpload(event) {
+      const file = event.target.files[0];
+      if (!file || !activeChatContact) return;
+
+      if (file.type.startsWith('image/')) {
+        // Compress Image for Instant Free Sync
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const maxDim = 700;
+            let w = img.width, h = img.height;
+            if (w > h) { h = (h * maxDim) / w; w = maxDim; }
+            else { w = (w * maxDim) / h; h = maxDim; }
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            const base64Img = canvas.toDataURL('image/jpeg', 0.7);
+            sendMediaMessage('image', base64Img);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      } else if (file.type.startsWith('video/')) {
+        if (file.size > 800 * 1024) {
+          alert('Video is too large. Please select a short clip under 800KB for direct sync.');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          sendMediaMessage('video', e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+      event.target.value = ''; // Reset input
+    }
+
+    async function sendMediaMessage(mediaType, mediaData) {
+      const cleanCurrent = cleanPhone(currentUserPhone);
+      const cleanRecipient = cleanPhone(activeChatContact.phone);
+      const chatId = [cleanCurrent, cleanRecipient].sort().join('_');
+
+      await db.collection('chats').doc(chatId).collection('messages').add({
+        sender: currentUser,
+        senderPhone: cleanCurrent,
+        receiverPhone: cleanRecipient,
+        text: '',
+        mediaType: mediaType,
+        mediaUrl: mediaData,
         isRead: false,
         createdAt: Date.now()
       });
     }
 
     // ==========================================
-    // 6. REAL SOCIAL FEED (STARTING FROM 0)
+    // 6. REAL FEED (STARTING FROM 0)
     // ==========================================
     function listenToContactFeed() {
       const allowedPhones = [cleanPhone(currentUserPhone), ...mySyncedContacts.map(c => cleanPhone(c.phone))];
@@ -1062,7 +1244,7 @@
       card.className = 'card';
       card.innerHTML = `
         <div class="post-header">
-          <div class="author-area">
+          <div class="author-area" onclick="viewUserProfile('${post.authorPhone}', '${post.author}', '${post.authorAvatar || ''}', '${post.authorBio || ''}')">
             ${post.authorAvatar 
               ? `<img src="${post.authorAvatar}" class="avatar-img" alt="">`
               : `<div class="avatar-img">${post.author.charAt(0).toUpperCase()}</div>`
