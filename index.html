@@ -249,13 +249,13 @@
     }
     .profile-photo-wrapper {
       position: relative;
-      width: 90px;
-      height: 90px;
+      width: 95px;
+      height: 95px;
       margin: 10px auto 14px auto;
     }
     .profile-photo-large {
-      width: 90px;
-      height: 90px;
+      width: 95px;
+      height: 95px;
       border-radius: 50%;
       object-fit: cover;
       border: 3px solid #38bdf8;
@@ -263,7 +263,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 30px;
+      font-size: 32px;
       font-weight: bold;
     }
     .photo-edit-badge {
@@ -272,16 +272,39 @@
       right: 0;
       background: #a3e635;
       color: #080e1e;
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 15px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.5);
     }
+    
+    /* 10-Day Lock Notification Badge */
+    .cooldown-badge {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: block;
+      line-height: 1.4;
+    }
+    .cooldown-locked {
+      background: rgba(244, 63, 94, 0.12);
+      border-color: rgba(244, 63, 94, 0.4);
+      color: #fb7185;
+    }
+
+
+
+
 
 
 /* WhatsApp Contacts & Chat Room */
@@ -551,7 +574,6 @@
     </div>
     <div class="chat-body" id="chat-body"></div>
     <div style="padding: 12px; background: #0e172a; display: flex; align-items: center; gap: 8px; border-top: 1px solid #1e293b;">
-      <!-- Attachment Paperclip Button -->
       <button class="attachment-btn" type="button" onclick="document.getElementById('chat-media-input').click()">📎</button>
       <input type="file" id="chat-media-input" accept="image/*,video/*" style="display:none;" onchange="handleChatMediaUpload(event)">
       
@@ -596,7 +618,7 @@
     <button class="btn" type="button" onclick="openBankCheckout()">Pay From Bank Account</button>
   </div>
 
-  <!-- Profile Slide-Up Modal (Shows on Profile Click) -->
+  <!-- Profile Slide-Up Modal with 10-Day Lock -->
   <div class="modal-overlay" id="profile-modal">
     <div class="modal-card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -604,11 +626,22 @@
         <span onclick="closeProfileModal()" style="font-size:22px; cursor:pointer; color:#94a3b8;">✕</span>
       </div>
 
+      <!-- 10-Day Policy Cooldown Notice -->
+      <div id="cooldown-notice" class="cooldown-badge">
+        ℹ️ Profile updates (photo, bio, name) are allowed once every 10 days.
+      </div>
+
+      <!-- Enhanced Profile Photo Section -->
       <div class="profile-photo-wrapper">
         <img id="modal-profile-img" class="profile-photo-large" src="" alt="Profile" style="display:none;">
         <div id="modal-profile-placeholder" class="profile-photo-large">?</div>
-        <div class="photo-edit-badge" id="modal-photo-edit-badge" onclick="document.getElementById('avatar-file-input').click()">📷</div>
+        <div class="photo-edit-badge" id="modal-photo-edit-badge" onclick="triggerPhotoPick()">📷</div>
       </div>
+      
+      <!-- Direct Photo Upload Button -->
+      <button class="btn btn-blue" id="upload-photo-btn" style="width:auto; padding:6px 14px; font-size:12px; margin-bottom:14px;" type="button" onclick="triggerPhotoPick()">
+        Upload / Change Photo 📸
+      </button>
       <input type="file" id="avatar-file-input" accept="image/*" style="display:none;" onchange="uploadProfilePhoto(event)">
 
       <label style="font-size: 12px; color: #94a3b8; text-align: left; display: block;">Nickname</label>
@@ -618,13 +651,13 @@
       <textarea id="modal-profile-bio" class="input-box" rows="2" style="resize:none;" placeholder="Your bio..."></textarea>
 
       <div id="my-profile-actions">
-        <button class="btn btn-blue" type="button" onclick="saveUserProfile()">Save Profile</button>
+        <button class="btn" id="save-profile-btn" type="button" onclick="saveUserProfile()">Save Profile (Lock for 10 Days)</button>
         <button class="btn" style="background:#f43f5e; color:white; margin-top:10px;" type="button" onclick="handleLogout()">Logout Account</button>
       </div>
     </div>
   </div>
 
-  <!-- Fixed Bottom Navigation (3 Clean Tabs Matching Mockup) -->
+  <!-- Fixed Bottom Navigation (3 Clean Tabs) -->
   <div class="nav-bar" id="main-nav" style="display:none !important;">
     <div class="nav-item active" onclick="switchTab('feed-screen', this)">
       <div class="nav-icon">📰</div>
@@ -640,6 +673,9 @@
       <span>Airtime/Data</span>
     </div>
   </div>
+
+
+
 
 
 <script>
@@ -664,6 +700,7 @@
     let currentUserPhone = null;
     let myAvatar = "";
     let myBio = "";
+    let lastProfileUpdate = 0; // Timestamp of last edit
     let isLoginMode = false;
     let vtuMode = 'airtime';
     let selectedNet = 'MTN';
@@ -719,6 +756,7 @@
             nickname: user.displayName || user.email.split('@')[0],
             avatar: "",
             bio: "Hey there! I am using 80 knee.",
+            lastProfileUpdate: 0,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
         }
@@ -765,6 +803,7 @@
             nickname: email.split('@')[0],
             avatar: "",
             bio: "Hey there! I am using 80 knee.",
+            lastProfileUpdate: 0,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
 
@@ -825,7 +864,7 @@
     }
 
     // ==========================================
-    // 3. PROFILE MODAL (OPEN ON CLICK)
+    // 3. PROFILE WITH 10-DAY EDIT LOCK & PHOTO
     // ==========================================
     async function loadUserProfile() {
       if (!auth.currentUser) return;
@@ -835,16 +874,60 @@
         currentUser = data.nickname || currentUser;
         myBio = data.bio || "Hey there! I am using 80 knee.";
         myAvatar = data.avatar || "";
+        lastProfileUpdate = data.lastProfileUpdate || 0;
       }
+    }
+
+    function triggerPhotoPick() {
+      // Check 10-day limit before opening photo picker
+      const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
+      const timePassed = Date.now() - lastProfileUpdate;
+
+      if (lastProfileUpdate && timePassed < TEN_DAYS_MS) {
+        const daysLeft = Math.ceil((TEN_DAYS_MS - timePassed) / (24 * 60 * 60 * 1000));
+        alert(`⏳ Profile is locked!\n\nYou can only change your photo, name, or bio once every 10 days.\nYou can update again in ${daysLeft} day(s).`);
+        return;
+      }
+      document.getElementById('avatar-file-input').click();
     }
 
     function openMyProfile() {
       document.getElementById('modal-profile-title').innerText = "My Profile";
       document.getElementById('modal-profile-nickname').value = currentUser;
-      document.getElementById('modal-profile-nickname').disabled = false;
       document.getElementById('modal-profile-bio').value = myBio;
-      document.getElementById('modal-profile-bio').disabled = false;
-      document.getElementById('modal-photo-edit-badge').style.display = "flex";
+
+      const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
+      const timePassed = Date.now() - lastProfileUpdate;
+      const notice = document.getElementById('cooldown-notice');
+      const saveBtn = document.getElementById('save-profile-btn');
+      const photoBtn = document.getElementById('upload-photo-btn');
+      const photoBadge = document.getElementById('modal-photo-edit-badge');
+
+      if (lastProfileUpdate && timePassed < TEN_DAYS_MS) {
+        const daysLeft = Math.ceil((TEN_DAYS_MS - timePassed) / (24 * 60 * 60 * 1000));
+        notice.className = "cooldown-badge cooldown-locked";
+        notice.innerText = `⏳ Profile Edit Locked: You can only edit your profile once every 10 days. Next edit available in ${daysLeft} day(s).`;
+        
+        document.getElementById('modal-profile-nickname').disabled = true;
+        document.getElementById('modal-profile-bio').disabled = true;
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = "0.5";
+        saveBtn.innerText = `Locked for ${daysLeft} more day(s)`;
+        photoBtn.style.opacity = "0.5";
+      } else {
+        notice.className = "cooldown-badge";
+        notice.innerText = "✅ Profile update available! Once saved, your profile will be locked for 10 days.";
+        
+        document.getElementById('modal-profile-nickname').disabled = false;
+        document.getElementById('modal-profile-bio').disabled = false;
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = "1";
+        saveBtn.innerText = "Save Profile (Lock for 10 Days)";
+        photoBtn.style.opacity = "1";
+      }
+
+      photoBadge.style.display = "flex";
+      photoBtn.style.display = "inline-block";
       document.getElementById('my-profile-actions').style.display = "block";
 
       const img = document.getElementById('modal-profile-img');
@@ -869,7 +952,9 @@
       document.getElementById('modal-profile-bio').value = bio || "No bio yet.";
       document.getElementById('modal-profile-bio').disabled = true;
       document.getElementById('modal-photo-edit-badge').style.display = "none";
+      document.getElementById('upload-photo-btn').style.display = "none";
       document.getElementById('my-profile-actions').style.display = "none";
+      document.getElementById('cooldown-notice').style.display = "none";
 
       const img = document.getElementById('modal-profile-img');
       const placeholder = document.getElementById('modal-profile-placeholder');
@@ -888,8 +973,10 @@
 
     function closeProfileModal() {
       document.getElementById('profile-modal').style.display = "none";
+      document.getElementById('cooldown-notice').style.display = "block";
     }
 
+    // High-Resolution Client Image Compression
     function uploadProfilePhoto(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -899,7 +986,7 @@
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          const maxDim = 180;
+          const maxDim = 250;
           let w = img.width, h = img.height;
           if (w > h) { h = (h * maxDim) / w; w = maxDim; }
           else { w = (w * maxDim) / h; h = maxDim; }
@@ -907,11 +994,12 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, w, h);
 
-          myAvatar = canvas.toDataURL('image/jpeg', 0.8);
+          myAvatar = canvas.toDataURL('image/jpeg', 0.85);
           const pImg = document.getElementById('modal-profile-img');
           pImg.src = myAvatar;
           pImg.style.display = "block";
           document.getElementById('modal-profile-placeholder').style.display = "none";
+          alert('Photo selected! Tap "Save Profile" below to confirm changes.');
         };
         img.src = e.target.result;
       };
@@ -919,6 +1007,15 @@
     }
 
     async function saveUserProfile() {
+      const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
+      const timePassed = Date.now() - lastProfileUpdate;
+
+      if (lastProfileUpdate && timePassed < TEN_DAYS_MS) {
+        const daysLeft = Math.ceil((TEN_DAYS_MS - timePassed) / (24 * 60 * 60 * 1000));
+        alert(`Action Blocked: Profile updates are restricted to once every 10 days. Please wait ${daysLeft} more day(s).`);
+        return;
+      }
+
       const nickname = document.getElementById('modal-profile-nickname').value.trim();
       const bio = document.getElementById('modal-profile-bio').value.trim();
 
@@ -929,15 +1026,19 @@
 
       currentUser = nickname;
       myBio = bio;
+      const now = Date.now();
+      lastProfileUpdate = now;
 
       if (auth.currentUser) {
         await db.collection('users').doc(auth.currentUser.uid).set({
           nickname: nickname,
           bio: bio,
           avatar: myAvatar,
-          phone: currentUserPhone
+          phone: currentUserPhone,
+          lastProfileUpdate: now
         }, { merge: true });
-        alert('✅ Profile saved successfully!');
+
+        alert('✅ Profile saved! Your changes are locked for the next 10 days.');
         closeProfileModal();
       }
     }
@@ -1050,7 +1151,7 @@
       window.location.href = isIOS ? `sms:${clean}&body=${text}` : `sms:${clean}?body=${text}`;
     }
 
-    // Real Unread Counter (Only shows if > 0)
+    // Real Unread Counter
     function listenForRealUnreadMessages() {
       db.collectionGroup('messages')
         .where('receiverPhone', '==', currentUserPhone)
@@ -1066,6 +1167,7 @@
           }
         }, err => console.warn(err));
     }
+
 
 
 
@@ -1155,13 +1257,11 @@
       });
     }
 
-    // Media (Photo & Video) Chat Dispatch Engine
     function handleChatMediaUpload(event) {
       const file = event.target.files[0];
       if (!file || !activeChatContact) return;
 
       if (file.type.startsWith('image/')) {
-        // Compress Image for Instant Free Sync
         const reader = new FileReader();
         reader.onload = function(e) {
           const img = new Image();
@@ -1191,7 +1291,7 @@
         };
         reader.readAsDataURL(file);
       }
-      event.target.value = ''; // Reset input
+      event.target.value = '';
     }
 
     async function sendMediaMessage(mediaType, mediaData) {
